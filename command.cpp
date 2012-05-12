@@ -43,7 +43,7 @@ void command::PrintPrompt() const {
 }
 
 const std::string command::PROMPT = "DeepFour ";
-const std::string command::VERSION = "1.07";
+const std::string command::VERSION = "0.7.2";
 
 const std::string command::commandSet[] = { 
   "display \t- display the board",

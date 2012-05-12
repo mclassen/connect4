@@ -15,7 +15,7 @@
 //#define _connect4_debug_
 
 int main() {
-  std::cout << "DeepFour (by m1ck1) \n\n";
+  std::cout << "DeepFour (by Michael Claßen) \n\n";
 
   board MainBoard;
   command cli;
