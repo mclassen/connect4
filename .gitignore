@@ -10,3 +10,12 @@
 *.lai
 *.la
 *.a
+
+# bin directory
+bin/
+bin/*
+
+# object files
+
+# .exe files
+*.exe
