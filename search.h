@@ -48,7 +48,7 @@ private:
     long searchedNodes;
 
     int PerformSearch(int distance, int depth,
-		      int alpha, int beta);
+                      int alpha, int beta);
     void ClearVariations();
     void CopyVariation(const int depth, const int move);
 

@@ -5,7 +5,7 @@ inline int File(int sq) { return sq % constants::MAX_FILES; }
 inline int Rank(int sq) { return sq / constants::MAX_FILES; }
 
 class board {
- public:	
+ public:
   board();
 
   void Display();
@@ -37,7 +37,7 @@ class board {
   bool fourConnected;
   int threats;
   void UpdateThreats(int file, int rank, 
-		     int side, bool makingMove);
+                     int side, bool makingMove);
 
 };
 
