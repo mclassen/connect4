@@ -41,7 +41,7 @@ search::search(board& newBoard) :
   ClearVariations();
 }
 
-void search::InitSearch(int depth, searchResult& result, 
+void search::InitSearch(unsigned int depth, searchResult& result,
                         SearchSettings& currentSettings) {
     searchedNodes = 0;
 
@@ -57,7 +57,7 @@ void search::InitSearch(int depth, searchResult& result,
       std::cout << "Max depth reached! " << std::endl;
     }
 
-    for(int currDepth = 1; currDepth <= depth; currDepth++) {
+    for(unsigned int currDepth = 1; currDepth <= depth; currDepth++) {
 
       stopTime = time(NULL);
       if((currentSettings.GetTimeLimit() > 0) &&
@@ -110,7 +110,7 @@ void search::InitSearch(int depth, searchResult& result,
     stopTime = time(NULL);
 } // end InitSearch...
 
-int search::PerformSearch(int distance, int depth,
+int search::PerformSearch(unsigned int distance, unsigned int depth,
                           int alpha, int beta) {
   // clear principle variation:
   principleVariations[depth][0] = constants::INVALID;
@@ -136,29 +136,44 @@ int search::PerformSearch(int distance, int depth,
 
         // generate all moves:
         itsBoard.GenerateMoves(buffer);
-        
+
         const int legal_moves = buffer.numMoves;
-        
-        if(distance > 2) {
+
+        if(distance > 4) {
           switch(legal_moves) {
             case 7:
-              distance = std::max(3, distance - 2);
+              if(distance > 12) {
+                distance = (7*distance)/8;
+              }
               break;
             case 6:
-              distance = std::max(3, distance - 1);
+              if(distance > 10) {
+                distance = (15*distance)/16;
+              }
+              break;
+            case 5:
+              if(distance > 8) {
+                distance = (31*distance)/32;
+              }
               break;
             // ...
-            case 4:
-              distance = std::min(constants::MAX_DEPTH, distance + 1);
-              break;
+            //case 4:
+            //  distance = std::min(constants::MAX_DEPTH, (33*distance)/32);
+            //  break;
             case 3:
-              distance = std::min(constants::MAX_DEPTH, distance + 1);
+              if(distance < 16) {
+                distance = std::min(constants::MAX_DEPTH, std::min(distance+1, (33*distance)/32));
+              }
               break;
             case 2:
-              distance = std::min(constants::MAX_DEPTH, distance + 2);
+              if(distance < 12) {
+                distance = std::min(constants::MAX_DEPTH, std::min(distance+1, (17*distance)/16));
+              }
               break;
             case 1:
-              distance = std::min(constants::MAX_DEPTH, distance + 2);
+              if(distance < 8) {
+                distance = std::min(constants::MAX_DEPTH, std::min(distance+2, (9*distance)/8));
+              }
               break;
             default:
               break;
@@ -204,12 +219,12 @@ int search::PerformSearch(int distance, int depth,
 }
 
 void search::ClearVariations() {
-  for(int depth = 0; depth < maxDepth; depth++) {
+  for(unsigned int depth = 0; depth < maxDepth; depth++) {
     principleVariations[depth][0] = constants::INVALID;
   }
 }
 
-void search::CopyVariation(const int depth, const int move) {
+void search::CopyVariation(const unsigned int depth, const int move) {
   const int* pNextDepth_PV = &principleVariations[depth + 1][0];
   int* pCurrent_PV = &principleVariations[depth][0];
 
