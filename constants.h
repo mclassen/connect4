@@ -15,15 +15,15 @@ namespace constants {
   const int STALEMATE_VALUE = 0;
   const int BEST_VALUE = 10000;
   
-  const int WINDOW = 40; 
+  const int WINDOW = 50; 
   const int MATE_RANGE = 100;
 
   const int INVALID = -20000;
 
   const int NUM_THREATS = 69;
 
-  const int THREE_VAL = 25;
-  const int TWO_VAL   = 3;
+  const int THREE_VAL = 32;
+  const int TWO_VAL   = 2;
 
   const int CENTER_TABLE[MAX_FILES][MAX_RANKS] =
 // rank: 0   1   2   3   4   5  

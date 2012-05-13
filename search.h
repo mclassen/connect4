@@ -29,7 +29,7 @@ public:
     search(board& newBoard);
     ~search() {};
 
-    const long GetSearchedNodes() const { return searchedNodes; }
+    const long long GetSearchedNodes() const { return searchedNodes; }
     void InitSearch(int depth, searchResult& result, 
 		    SearchSettings& itsSettings);
     void PrintVariation() const;
@@ -45,7 +45,7 @@ private:
     // evtl. die dimensionen vertauschen...
     int principleVariations[constants::MAX_DEPTH][constants::MAX_DEPTH + 1];
     int maxDepth;
-    long searchedNodes;
+    long long searchedNodes;
 
     int PerformSearch(int distance, int depth,
                       int alpha, int beta);

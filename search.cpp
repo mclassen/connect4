@@ -53,8 +53,12 @@ void search::InitSearch(int depth, searchResult& result,
     std::cout << "performing search..." << std::endl;
     startTime = time(NULL);
 
+    if(depth > maxDepth) {
+      std::cout << "Max depth reached! " << std::endl;
+    }
+
     for(int currDepth = 1; currDepth <= depth; currDepth++) {
-    
+
       stopTime = time(NULL);
       if((currentSettings.GetTimeLimit() > 0) &&
          (GetElapsedTime() > currentSettings.GetTimeLimit())) {
@@ -118,13 +122,12 @@ int search::PerformSearch(int distance, int depth,
   searchedNodes++;
 
   // check for "mate":
-  if(itsBoard.GetFourConnected() == true) {
+  if(itsBoard.GetFourConnected() == true && itsBoard.GetNumberOfMove() <= constants::MAX_MOVES) {
     //std::cout << "4-connected!\n";
     best = (constants::WORST_VALUE + depth);
   } else
     // check for "stalemate":
-    if(itsBoard.GetNumberOfMove() >=
-       maxDepth) {
+    if(itsBoard.GetNumberOfMove() >= constants::MAX_MOVES) {
       best = constants::STALEMATE_VALUE;
     } else
       // check if we are still within the searchtree:
