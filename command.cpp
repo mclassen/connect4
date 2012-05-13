@@ -15,21 +15,25 @@ command::~command() {
 }
 
 void command::Read() {
-  commandStr = std::string();
-  std::cin >> commandStr;
-  if(commandStr != "") {
-    id = NONE;
-    for(int i=0; i < MAX_COMMANDS; i++) {
-      //std::cout << commandSet[i][0] << std::endl;
-      if(commandSet[i][0] == commandStr[0])
-	id = (enum commandId)i;
+  commandStr.clear();
+  if(std::cin >> commandStr) {
+    if(!commandStr.empty()) {
+      id = NONE;
+      for(int i=0; i < MAX_COMMANDS; i++) {
+        //std::cout << commandSet[i][0] << std::endl;
+        if(commandSet[i][0] == commandStr[0])
+          id = (enum commandId)i;
+      }
+      if(id >= MOVE) {
+        std::cin >> param;
+      }
+    } else {
+      id = NONE;
     }
-    if(id >= MOVE) {
-      std::cin >> param;
-    }
-  } else
-    id = NONE;
-  //std::cout << id << std::endl;
+  } else {
+    // end of line (control-d pressed)
+    id = QUIT;
+  }
 }
 
 void command::PrintCommands() const {
