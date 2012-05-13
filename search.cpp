@@ -142,23 +142,23 @@ int search::PerformSearch(int distance, int depth,
         if(distance > 2) {
           switch(legal_moves) {
             case 7:
-              //distance = std::max(4, distance - 1);
+              distance = std::max(3, distance - 2);
               break;
             case 6:
-              //distance = std::max(4, distance - 1);
+              distance = std::max(3, distance - 1);
               break;
             // ...
             case 4:
               distance = std::min(constants::MAX_DEPTH, distance + 1);
               break;
             case 3:
-              distance = std::min(constants::MAX_DEPTH, distance + 2);
+              distance = std::min(constants::MAX_DEPTH, distance + 1);
               break;
             case 2:
-              distance = std::min(constants::MAX_DEPTH, distance + 3);
+              distance = std::min(constants::MAX_DEPTH, distance + 2);
               break;
             case 1:
-              distance = std::min(constants::MAX_DEPTH, distance + 4);
+              distance = std::min(constants::MAX_DEPTH, distance + 2);
               break;
             default:
               break;
