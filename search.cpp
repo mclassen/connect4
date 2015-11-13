@@ -1,5 +1,6 @@
 ﻿#include <vector>
 #include <iostream>
+#include <algorithm>
 #include <time.h>
 #include "constants.h"
 #include "move_buffer.h"
@@ -138,47 +139,53 @@ int search::PerformSearch(unsigned int distance, unsigned int depth,
         itsBoard.GenerateMoves(buffer);
 
         const int legal_moves = buffer.numMoves;
+		const unsigned minDist = 4U;
+		unsigned cutoffDist = 8U;
 
-        if(distance > 4) {
-          switch(legal_moves) {
-            case 7:
-              if(distance > 12) {
-                distance = (7*distance)/8;
-              }
-              break;
-            case 6:
-              if(distance > 10) {
-                distance = (15*distance)/16;
-              }
-              break;
-            case 5:
-              if(distance > 8) {
-                distance = (31*distance)/32;
-              }
-              break;
-            // ...
-            //case 4:
-            //  distance = std::min(constants::MAX_DEPTH, (33*distance)/32);
-            //  break;
-            case 3:
-              if(distance < 16) {
-                distance = std::min(constants::MAX_DEPTH, std::min(distance+1, (33*distance)/32));
-              }
-              break;
-            case 2:
-              if(distance < 12) {
-                distance = std::min(constants::MAX_DEPTH, std::min(distance+1, (17*distance)/16));
-              }
-              break;
-            case 1:
-              if(distance < 8) {
-                distance = std::min(constants::MAX_DEPTH, std::min(distance+2, (9*distance)/8));
-              }
-              break;
-            default:
-              break;
-          }
-        }
+		if (distance >= minDist) {
+			switch (legal_moves) {
+			case 7:
+				cutoffDist = 24U;
+				if (distance <= cutoffDist) {
+					//distance = (7*distance)/8;
+					distance = std::max(minDist, std::max(distance - 4, (1 * distance) / 2));
+				}
+				break;
+			case 6:
+				cutoffDist = 16U;
+				if (distance <= cutoffDist) {
+					//distance = (15*distance)/16;
+					distance = std::max(minDist, std::max(distance - 2, (3 * distance) / 4));
+				}
+				break;
+			case 5:
+				cutoffDist = 12U;
+				if (distance <= cutoffDist) {
+					//distance = (31*distance)/32;
+					distance = std::max(cutoffDist, std::max(distance - 1, (7 * distance) / 8));
+				}
+				break;
+				// ...
+			case 4:
+				//  distance = std::min(constants::MAX_DEPTH, (33*distance)/32);
+				break;
+			case 3:
+				//if (distance <= 12U) {
+				//	distance = std::min(constants::MAX_DEPTH, std::min(distance + 6, (2 * distance) / 1));
+				//}
+				break;
+			case 2:
+				if (distance <= 16U) {
+					distance = std::min(constants::MAX_DEPTH, std::max(distance + 1, (5 * distance) / 4));
+				}
+				break;
+			case 1:
+				distance = std::min(constants::MAX_DEPTH, std::max(distance + 2, (3 * distance) / 2));
+				break;
+			default:
+				break;
+			}
+		}
         for(int i = 0; i < buffer.numMoves; i++) {
           // make a move:
           itsBoard.MakeMove(buffer.moves[i]);
