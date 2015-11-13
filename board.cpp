@@ -33,18 +33,18 @@ void board::Display() {
   for(int y = constants::MAX_RANKS-1; y >= 0; y --) {
     for(int x = 0; x < constants::MAX_FILES; x++) {
       if(square[y * constants::MAX_FILES + x] == constants::WHITE)
-	std::cout << " O ";
+        std::cout << " O ";
       else if(square[y * constants::MAX_FILES + x] == constants::BLACK)
-	std::cout << " X ";
+        std::cout << " X ";
       else
-	std::cout << " . ";
+        std::cout << " . ";
     }
     std::cout << std::endl;
   }
   std::cout << std::endl 
-	    <<((side == constants::WHITE) ? "O " : "X ") 
-	    << "to move. " << "Threats: " << GetThreats()
-	    << std::endl;
+            <<((side == constants::WHITE) ? "O " : "X ") 
+            << "to move. " << "Threats: " << GetThreats()
+            << std::endl;
 }
 
 
@@ -98,7 +98,7 @@ void board::GenerateMoves(MoveBuffer& buffer) {
 #endif
 
 void board::UpdateThreats(int file, int rank, 
-		   int side, bool makingMove) {
+  int side, bool makingMove) {
   int i = 0;
   int threatIndex = constants::THREAT_TABLE[file][rank][i];
   int black, white;
@@ -129,8 +129,7 @@ void board::UpdateThreats(int file, int rank,
           tempResult += constants::TWO_VAL;
         break;
       case 1:
-        if(black == 3)
-          tempResult += 1;
+          tempResult += (black == 3) ? 1 : 0;
         break;
       case 0:
         if(black == 4) {
@@ -180,9 +179,9 @@ void board::UpdateThreats(int file, int rank,
 bool board::MoveIsValid(int file, bool makingMove) const {
   if(makingMove)
     return ((file >= 0 && file < constants::MAX_FILES) && 
-	    piecesInFile[file] < constants::MAX_RANKS);
+            piecesInFile[file] < constants::MAX_RANKS);
   else
     return ((file >= 0 && file < constants::MAX_FILES) &&
-	    piecesInFile[file] > 0 && numberOfMove > 0);
+            piecesInFile[file] > 0 && numberOfMove > 0);
 }
 

@@ -6,34 +6,34 @@ namespace constants {
   const int NONE = 0;
   const int WHITE = 1;
   
-  const int MAX_FILES = 7;
-  const int MAX_RANKS = 6;
-  const int MAX_DEPTH = 42;
-  const int MAX_MOVES = 42;
+  const unsigned int MAX_FILES = 7;
+  const unsigned int MAX_RANKS = 6;
+  const unsigned int MAX_DEPTH = 42;
+  const unsigned int MAX_MOVES = 42;
   
   const int WORST_VALUE = -10000;
   const int STALEMATE_VALUE = 0;
   const int BEST_VALUE = 10000;
   
-  const int WINDOW = 12; 
+  const int WINDOW = 10;
   const int MATE_RANGE = 100;
 
   const int INVALID = -20000;
 
   const int NUM_THREATS = 69;
 
-  const int THREE_VAL = 6;
+  const int THREE_VAL = 8;
   const int TWO_VAL   = 2;
 
   const int CENTER_TABLE[MAX_FILES][MAX_RANKS] =
 // rank: 0   1   2   3   4   5  
-  {{ 0,  1,  3,  2,  1, -2}, // first FILE
-   { 2,  3,  5,  4,  1,  0}, // second FILE
-   { 4,  5,  7,  5,  2,  1}, // ...
-   { 5,  6,  8,  7,  3,  1},
-   { 4,  5,  7,  5,  2,  1},
-   { 2,  3,  5,  4,  1,  0},
-   { 0,  1,  3,  2,  1, -2}};
+      {{ 0,  1,  3,  2,  1, -2}, // first FILE
+       { 2,  3,  5,  4,  1,  0}, // second FILE
+       { 4,  5,  7,  5,  2,  1}, // ...
+       { 6,  7,  8,  7,  3,  1},
+       { 4,  5,  7,  5,  2,  1},
+       { 2,  3,  5,  4,  1,  0},
+       { 0,  1,  3,  2,  1, -2}};
 
   const int THREAT_TABLE[MAX_FILES][MAX_RANKS][14] = {
     // first file:
