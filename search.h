@@ -66,8 +66,11 @@ private:
         result = -aBoard.GetThreats();
       }
       // adjust for the advantage of white having the first move
-      if(numMove > 2 && numMove < 20) {
-        result += 5;
+      if(numMove > 0) {
+        result +=
+			std::max(2U,
+				std::min(6U,
+					(4U * constants::MAX_DEPTH) / numMove));
       }
       return result;
     }

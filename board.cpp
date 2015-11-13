@@ -122,14 +122,14 @@ void board::UpdateThreats(int file, int rank,
         fourConnected = true;
         break;
       case 3:
-        tempResult += (black == 0) ? constants::THREE_VAL : -1;
+        tempResult += (black == 0) ? constants::THREE_VAL : -constants::THREE_VAL/3;
         break;
       case 2:
         if(black == 0)
           tempResult += constants::TWO_VAL;
         break;
       case 1:
-          tempResult += (black == 3) ? 1 : 0;
+          tempResult += (black == 3) ? constants::THREE_VAL/3 : 0;
         break;
       case 0:
         if(black == 4) {
@@ -144,6 +144,11 @@ void board::UpdateThreats(int file, int rank,
         std::cout << "case fell through in UpdateThreats()" << std::endl;
         break;
     }
+	// tempResult *= 7;
+	// tempResult += side * (constants::MAX_RANKS - rank);
+	// tempResult /= 8;
+	
+	
     if(makingMove) {
       threats += tempResult;
     } else {
@@ -159,21 +164,21 @@ void board::UpdateThreats(int file, int rank,
     i++;
     threatIndex = constants::THREAT_TABLE[file][rank][i];
   }
-  /*
-  if(makingMove) {
+  
+/*   if(makingMove) {
     if(side == constants::WHITE) {
-      threats += constants::CENTER_TABLE[file][rank];
+      threats += constants::CENTER_TABLE[file][rank] / 2;
     } else {
-      threats -= constants::CENTER_TABLE[file][rank];
+      threats -= constants::CENTER_TABLE[file][rank] / 2;
     }
   } else {
     if(side == constants::WHITE) {
-      threats -= constants::CENTER_TABLE[file][rank];
+      threats -= constants::CENTER_TABLE[file][rank] / 2;
     } else {
-      threats += constants::CENTER_TABLE[file][rank];
+      threats += constants::CENTER_TABLE[file][rank] / 2;
     }
-  }
-  */
+  } */
+  
 }
 
 bool board::MoveIsValid(int file, bool makingMove) const {
