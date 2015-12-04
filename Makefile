@@ -11,7 +11,7 @@
 #### Compiler and tool definitions shared by all build targets #####
 CCC = g++
 CXX = g++
-BASICOPTS = -g -m64
+BASICOPTS = -g -m64 -std=c++11
 CCFLAGS = $(BASICOPTS)
 CXXFLAGS = $(BASICOPTS)
 CCADMIN = 
@@ -36,7 +36,7 @@ USERLIBS_connect4 = $(SYSLIBS_connect4)
 DEPLIBS_connect4 =  
 LDLIBS_connect4 = $(USERLIBS_connect4)
 
-CPPFLAGS_connect4 = -O3 -m64
+CPPFLAGS_connect4 = -O3 -m64 -std=c++11
 
 # Link or archive
 $(TARGETDIR_connect4)/connect4: $(TARGETDIR_connect4) $(OBJS_connect4) $(DEPLIBS_connect4)

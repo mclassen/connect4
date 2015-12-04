@@ -161,7 +161,8 @@ void board::UpdateThreats(int file, int rank,
       threats -= tempResult;
     }
 	
-	const int CENTER_TABLE_VAL = constants::CENTER_TABLE[file][rank] / 2;
+	const int CENTER_TABLE_VAL =
+            (constants::CENTER_TABLE[file][rank]) / 2;
 	if(makingMove) {
 		if(side == constants::WHITE) {
 			threats += CENTER_TABLE_VAL;

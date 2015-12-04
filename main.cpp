@@ -91,6 +91,8 @@ int main() {
       break;
     case NEW:
       MainBoard = board();
+      Search = search(MainBoard);
+      Search.InitHash(constants::HASH_SIZE);
       break;
     case LIMIT:
       mainSearchSettings.SetTimeLimit(cli.GetParam());

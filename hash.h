@@ -1,17 +1,18 @@
 #ifndef _Hash_h_
 
 #include "board.h"
+#include "constants.h"
 
 #include <vector>
 
 struct HashEntry {
 	
 	HashEntry(
-		int distance,
+		unsigned char distance,
 		bool side,
-		int value,
-		int alpha,
-		int beta,
+		short value,
+		short alpha,
+		short beta,
 		unsigned long key
 	) :	itsDistance(distance),
 		itsSide(side),
@@ -23,12 +24,12 @@ struct HashEntry {
 		// nothing to do here
 	}
 		
-	int itsDistance;
+	unsigned char itsDistance;
 	bool itsSide;
 
-	int itsValue;
-	int itsAlpha;
-	int itsBeta;
+	short itsValue;
+	short itsAlpha;
+	short itsBeta;
 
 	unsigned long itsKey;
 
@@ -45,16 +46,16 @@ class HashKey {
   void makeMove(int move, int side)
   {
 	if(side == constants::WHITE)
-		key ^= RANDOM_VALUES[move][0];
+		key ^= RANDOM_VALUES[move];
 	else
-		key ^= RANDOM_VALUES[move][1];
+		key ^= RANDOM_VALUES[move + constants::MAX_MOVES];
   }
 
   unsigned long getKey() const { return key; }
 
  private:
   static void initRandomValues();
-  static unsigned long RANDOM_VALUES[constants::MAX_MOVES][2];
+  static unsigned long RANDOM_VALUES[constants::MAX_MOVES * 2];
   static bool randomValuesInit;
   static unsigned long createUnsignedRand();
 
@@ -64,10 +65,9 @@ class HashKey {
 class HashTable
 {
 public:
-	HashTable(const unsigned long size) : itsSize(size)
+	HashTable(const unsigned size) : itsSize(size)
 	{
 		entries.reserve(itsSize);
-		init();
 	}
 	
 	void init()
@@ -153,7 +153,7 @@ public:
 	}
 
 private:
-	unsigned long itsSize;
+	unsigned itsSize;
 	std::vector<HashEntry> entries;
 	
 };

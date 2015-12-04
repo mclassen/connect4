@@ -1,5 +1,6 @@
 
 #include "constants.h"
+#include "hash.h"
 
 #ifndef __search
 
@@ -36,6 +37,11 @@ public:
     const long long GetSearchedNodes() const { return searchedNodes; }
     void InitSearch(unsigned int depth, searchResult& result, 
 		    SearchSettings& itsSettings);
+    void InitHash(unsigned long size)
+    {
+        itsHash.init();
+    }
+    
     void PrintVariation() const;
     const double GetElapsedTime() const { 
       return difftime(stopTime, startTime);
@@ -43,14 +49,14 @@ public:
     
 private:
     board itsBoard;
-	HashTable itsHash;
+    HashTable itsHash;
     time_t startTime;
     time_t stopTime;
 
     // evtl. die dimensionen vertauschen...
     int principleVariations[constants::MAX_DEPTH][constants::MAX_DEPTH + 1];
     unsigned int maxDepth;
-    long long searchedNodes;
+    unsigned long long searchedNodes;
 
     int PerformSearch(unsigned int distance, unsigned int depth,
                       int alpha, int beta);

@@ -1,5 +1,6 @@
 ﻿#include <vector>
 #include <iostream>
+#include <iomanip>
 #include <algorithm>
 #include <time.h>
 #include "constants.h"
@@ -10,7 +11,7 @@
 #include "search.h"
 
 void searchResult::Print() {
-  std::cout << " val.: " << value;
+  std::cout << " val.: " << std::setw(5) << value;
   std::cout << " tvar.: ";
   PrintVariation();
 }
@@ -88,23 +89,25 @@ void search::InitSearch(unsigned int depth, searchResult& result,
 #endif
 
     if (best <= alpha) {
-      std::cout << "-" << std::endl;
+      std::cout << "-" << std::flush;
       beta = alpha;
       alpha = constants::WORST_VALUE;
 
       // clear all principle variations:
       //ClearVariations();
     } else if (best >= beta) {
-      std::cout << "+" << std::endl;
+      std::cout << "+" << std::flush;
       alpha = beta;
       beta = constants::BEST_VALUE;
 
       // clear all principle variations:
       //ClearVariations();
       best = PerformSearch(currDepth, 0, alpha, beta);
+    } else {
+      std::cout << " " << std::flush;
     }
     //std::cout << "Depth: ";
-    std::cout << currDepth << ":";
+    std::cout << std::setw(3) << currDepth << ":";
     result.SetValue(best);
     result.SetVariation(principleVariations[0][0]);
     // itsHash.store(
@@ -174,7 +177,7 @@ int search::PerformSearch(unsigned int distance, unsigned int depth,
     
     
     
-    const unsigned minDist = 4u;
+    const unsigned minDist = 5u;
     unsigned cutoffDist = 8u;
     const unsigned moveNum = itsBoard.GetNumberOfMove();
 
@@ -184,13 +187,13 @@ int search::PerformSearch(unsigned int distance, unsigned int depth,
       switch (legal_moves)
       {
         case 7:
-          cutoffDist = 36u;
+          cutoffDist = 32u;
           if (distance <= cutoffDist) {
             distance -= distance / 8;
           }
           break;
         case 6:
-          cutoffDist = 32u;
+          cutoffDist = 27u;
           if (distance <= cutoffDist) {
             distance -= distance / 8;
           }
@@ -202,22 +205,19 @@ int search::PerformSearch(unsigned int distance, unsigned int depth,
           }
           break;
         case 4:
-          cutoffDist = 16u;
+          cutoffDist = 20u;
           if (distance <= cutoffDist) {
             distance -= distance / 8;
           }
           break;
         case 3:
-          cutoffDist = 12u;
+          cutoffDist = 16u;
           if (distance <= cutoffDist) {
             distance -= distance / 8;
           }
           break;
         case 2:
-          cutoffDist = 12u;
-          if (distance <= cutoffDist) {
-            distance += distance / 8;
-          }
+          distance += distance / 16;
           break;
         case 1:
           distance += distance / 8;
@@ -225,8 +225,6 @@ int search::PerformSearch(unsigned int distance, unsigned int depth,
         default:
           break;
       }
-
-      distance += (itsBoard.GetNumberOfMove() + distance + 1) % 2;
 //
 //       const bool isEvenMove = moveNum % 2 == 0;
 //       if (isEvenMove)
@@ -235,7 +233,7 @@ int search::PerformSearch(unsigned int distance, unsigned int depth,
 //       moveNum <= constants::MAX_DEPTH/2 ? -1u : 0u;
 //       }
     }
-    
+    distance += (itsBoard.GetNumberOfMove() + distance + 1) % 2;
     if (distance > constants::MAX_DEPTH - itsBoard.GetNumberOfMove()) {
       distance = constants::MAX_DEPTH - itsBoard.GetNumberOfMove();
     }

@@ -2,9 +2,9 @@
 
 namespace constants {
     
-    const bool USE_HASH = false; 
+    const bool USE_HASH = true; 
 	
-  const unsigned long HASH_SIZE = 1024 * 1024 * 4;
+  const unsigned long HASH_SIZE = 1024 * 1024 * 16;
 
   const int BLACK = -1;
   const int NONE = 0;
@@ -32,40 +32,40 @@ namespace constants {
   const int RANK_THREE_VAL_TABLE[2][constants::MAX_RANKS] = 
   { // upside down, so first entry is rank[0]:
 	  {  // ranks for white (= yellow) from 0 to 6
-		10,
-		20,
-		10,
-		20,
-		10,
-		20
+		2,
+		8,
+		3,
+		8,
+		3,
+		8
 	  },
-	  {  // ranks for black (= red) from 0 to 6
-		20,
-		10,
-		20,
-		10,
-		20,
-		10
+	  {  // ranks for black (= red) from 0 to  3
+		8,
+		3,
+		8,
+		3,
+		8,
+		3
 	  }	  
   };
   
   const int RANK_TWO_VAL_TABLE[2][constants::MAX_RANKS] = 
   { // upside down, so first entry is rank[_, 0]:
 	  {  // ranks for white (= yellow) from 0 to 6
-		4,
 		2,
-		4,
+		1,
 		2,
-		4,
-		2
+		1,
+		2,
+		1
 	  },
 	  {  // ranks for black (= red) from 0 to MAX_RANKS-1
+		1,
 		2,
-		4,
+		1,
 		2,
-		4,
-		2,
-		4
+		1,
+		2
 	  }	  
   };
   
@@ -81,8 +81,8 @@ namespace constants {
   {
 	  //assert(rank < MAX_RANKS);
 	  //return RANK_TWO_VAL_TABLE[rank];
-	  const unsigned yellowOrRed = side == constants::WHITE ? 0 : 1;
-	  return RANK_TWO_VAL_TABLE[yellowOrRed][rank];
+//	  const unsigned yellowOrRed = side == constants::WHITE ? 0 : 1;
+//	  return RANK_TWO_VAL_TABLE[yellowOrRed][rank];
 	  return 1;
   }
 
@@ -91,7 +91,7 @@ namespace constants {
       {{ 3,  4,  5,  5,  4,  3}, // first FILE
        { 4,  6,  8,  8,  6,  4}, // second FILE
        { 5,  8, 11, 11,  8,  5}, // ...
-       { 7, 10, 13, 13, 10,  7},
+       { 7, 10, 14, 14, 10,  7},
        { 5,  8, 11, 11,  8,  5},
        { 4,  6,  8,  8,  6,  4},
        { 3,  4,  5,  5,  4,  3}};
