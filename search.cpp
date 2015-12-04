@@ -10,8 +10,8 @@
 #include "search.h"
 
 void searchResult::Print() {
-  std::cout << "val.: " << value;
-  std::cout << " var.: ";
+  std::cout << " val.: " << value;
+  std::cout << " tvar.: ";
   PrintVariation();
 }
 
@@ -19,7 +19,7 @@ void searchResult::PrintVariation() {
   if (variation.size() > 0) {
     std::cout << File(variation[0]) << " -";
     for (unsigned int i = 1; i < variation.size(); i++) {
-      std::cout << "  " << File(variation[i]);
+      std::cout << " " << File(variation[i]);
     }
     std::cout << std::endl;
   }
@@ -88,23 +88,23 @@ void search::InitSearch(unsigned int depth, searchResult& result,
 #endif
 
     if (best <= alpha) {
-      std::cout << "-" << std::flush;
+      std::cout << "-" << std::endl;
       beta = alpha;
       alpha = constants::WORST_VALUE;
 
       // clear all principle variations:
       //ClearVariations();
     } else if (best >= beta) {
-      std::cout << "+" << std::flush;
+      std::cout << "+" << std::endl;
       alpha = beta;
       beta = constants::BEST_VALUE;
 
       // clear all principle variations:
       //ClearVariations();
+      best = PerformSearch(currDepth, 0, alpha, beta);
     }
-    best = PerformSearch(currDepth, 0, alpha, beta);
-    std::cout << "Depth: ";
-    std::cout << currDepth << " ";
+    //std::cout << "Depth: ";
+    std::cout << currDepth << ":";
     result.SetValue(best);
     result.SetVariation(principleVariations[0][0]);
     // itsHash.store(
@@ -132,7 +132,7 @@ int search::PerformSearch(unsigned int distance, unsigned int depth,
   // another node has been reached
   searchedNodes++;
 
-    if (distance > 0)
+    if (constants::USE_HASH && distance > 0)
     {
         int hashValue = constants::INVALID;
         hashValue =
@@ -174,66 +174,66 @@ int search::PerformSearch(unsigned int distance, unsigned int depth,
     
     
     
-    const unsigned minDist = 6u;
+    const unsigned minDist = 4u;
     unsigned cutoffDist = 8u;
     const unsigned moveNum = itsBoard.GetNumberOfMove();
 
     if (distance >= minDist &&
-            moveNum < constants::MAX_MOVES - 1) {
-      switch (legal_moves) {
+            moveNum < constants::MAX_MOVES - 1)
+    {
+      switch (legal_moves)
+      {
         case 7:
-          cutoffDist = 6u;
-          if (distance >= cutoffDist && distance % 3u > 0) {
-            distance -= 1u;
+          cutoffDist = 36u;
+          if (distance <= cutoffDist) {
+            distance -= distance / 8;
           }
           break;
         case 6:
-          cutoffDist = 8u;
-          if (distance >= cutoffDist && distance % 2u == 0) {
-            distance -= 1u;
+          cutoffDist = 32u;
+          if (distance <= cutoffDist) {
+            distance -= distance / 8;
           }
           break;
         case 5:
-          cutoffDist = 16u;
-          if (distance >= cutoffDist && distance % 2u == 0) {
-            distance -= 1u;
+          cutoffDist = 24u;
+          if (distance <= cutoffDist) {
+            distance -= distance / 8;
           }
           break;
         case 4:
-          cutoffDist = 21u;
-          if (distance >= cutoffDist && distance % 3u == 0) {
-            distance -= 1u;
+          cutoffDist = 16u;
+          if (distance <= cutoffDist) {
+            distance -= distance / 8;
           }
           break;
         case 3:
           cutoffDist = 12u;
-          if (distance <= cutoffDist && distance % 3u == 0) {
-            distance += 1u;
+          if (distance <= cutoffDist) {
+            distance -= distance / 8;
           }
           break;
         case 2:
-          cutoffDist = 15u;
-          if (distance <= cutoffDist && distance % 2u == 0) {
-            distance += 1u;
+          cutoffDist = 12u;
+          if (distance <= cutoffDist) {
+            distance += distance / 8;
           }
           break;
         case 1:
-          if (distance % 2u == 0) {
-            distance += 1u;
-          }
+          distance += distance / 8;
           break;
         default:
           break;
       }
 
       distance += (itsBoard.GetNumberOfMove() + distance + 1) % 2;
-
-       const bool isEvenMove = moveNum % 2 == 0;
-       if (isEvenMove)
-       {
-       distance +=
-       moveNum <= constants::MAX_DEPTH/2 ? -1u : 0u;
-       }
+//
+//       const bool isEvenMove = moveNum % 2 == 0;
+//       if (isEvenMove)
+//       {
+//       distance +=
+//       moveNum <= constants::MAX_DEPTH/2 ? -1u : 0u;
+//       }
     }
     
     if (distance > constants::MAX_DEPTH - itsBoard.GetNumberOfMove()) {
@@ -262,7 +262,7 @@ int search::PerformSearch(unsigned int distance, unsigned int depth,
         CopyVariation(depth, buffer.moves[i]);
         // cut-off:
         if (best >= beta) {
-          if (!(itsBoard.GetFourConnected() == true || itsBoard.GetNumberOfMove() >= constants::MAX_MOVES)) {
+          if (constants::USE_HASH && !(itsBoard.GetFourConnected() == true || itsBoard.GetNumberOfMove() >= constants::MAX_MOVES)) {
             itsHash.store(
                     itsBoard,
                     distance,
@@ -312,7 +312,7 @@ void search::CopyVariation(const unsigned int depth, const int move) {
 void search::PrintVariation() const {
   const int* pPrincipleVariation = &principleVariations[0][0];
   while (*pPrincipleVariation != constants::INVALID) {
-    std::cout << "  " << *pPrincipleVariation++;
+    std::cout << " " << *pPrincipleVariation++;
   }
   std::cout << std::endl;
 }

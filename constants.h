@@ -1,6 +1,8 @@
 #ifndef __constants
 
 namespace constants {
+    
+    const bool USE_HASH = false; 
 	
   const unsigned long HASH_SIZE = 1024 * 1024 * 4;
 
@@ -30,40 +32,40 @@ namespace constants {
   const int RANK_THREE_VAL_TABLE[2][constants::MAX_RANKS] = 
   { // upside down, so first entry is rank[0]:
 	  {  // ranks for white (= yellow) from 0 to 6
-		50,
-		128,
-		50,
-		128,
-		50,
-		128
+		10,
+		20,
+		10,
+		20,
+		10,
+		20
 	  },
 	  {  // ranks for black (= red) from 0 to 6
-		128,
-		50,
-		128,
-		50,
-		128,
-		50
+		20,
+		10,
+		20,
+		10,
+		20,
+		10
 	  }	  
   };
   
   const int RANK_TWO_VAL_TABLE[2][constants::MAX_RANKS] = 
   { // upside down, so first entry is rank[_, 0]:
 	  {  // ranks for white (= yellow) from 0 to 6
-		10,
-		 8,
-		10,
-		 8,
-		10,
-		 8
+		4,
+		2,
+		4,
+		2,
+		4,
+		2
 	  },
 	  {  // ranks for black (= red) from 0 to MAX_RANKS-1
-		 8,
-		10,
-		 8,
-		10,
-		 8,
-		10
+		2,
+		4,
+		2,
+		4,
+		2,
+		4
 	  }	  
   };
   

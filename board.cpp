@@ -53,10 +53,10 @@ void board::Display() {
 void board::GenerateMoves(MoveBuffer& buffer) {
   buffer.numMoves = 0;
   numberOfPossibleMoves = 0;
-  if (fourConnected)
-  {
-    return;
-  }
+//  if (fourConnected)
+//  {
+//    return;
+//  }
   
   int i = 3;
   if(piecesInFile[i] < constants::MAX_RANKS) {
@@ -151,6 +151,7 @@ void board::UpdateThreats(int file, int rank,
         break;
       default:
         std::cerr << "case fell through in UpdateThreats()" << std::endl;
+        std::cerr << "white: " << white << ", black: " << black << std::endl;
         break;
     }
 
