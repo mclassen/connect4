@@ -177,7 +177,7 @@ int search::PerformSearch(unsigned int distance, unsigned int depth,
     
     
     
-    const unsigned minDist = 5u;
+    const unsigned minDist = 4u;
     unsigned cutoffDist = 8u;
     const unsigned moveNum = itsBoard.GetNumberOfMove();
 
@@ -187,7 +187,7 @@ int search::PerformSearch(unsigned int distance, unsigned int depth,
       switch (legal_moves)
       {
         case 7:
-          cutoffDist = 32u;
+          cutoffDist = 30;
           if (distance <= cutoffDist) {
             distance -= distance / 8;
           }
@@ -205,22 +205,22 @@ int search::PerformSearch(unsigned int distance, unsigned int depth,
           }
           break;
         case 4:
-          cutoffDist = 20u;
+          cutoffDist = 21u;
           if (distance <= cutoffDist) {
-            distance -= distance / 8;
+            distance -= distance / 12;
           }
           break;
         case 3:
-          cutoffDist = 16u;
-          if (distance <= cutoffDist) {
-            distance -= distance / 8;
-          }
+//          cutoffDist = 18u;
+//          if (distance <= cutoffDist) {
+//            distance -= distance / 16;
+//          }
           break;
         case 2:
-          distance += distance / 16;
+          distance += distance / 8;
           break;
         case 1:
-          distance += distance / 8;
+          distance += distance / 16;
           break;
         default:
           break;

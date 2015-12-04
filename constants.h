@@ -4,7 +4,7 @@ namespace constants {
     
     const bool USE_HASH = true; 
 	
-  const unsigned long HASH_SIZE = 1024 * 1024 * 16;
+  const unsigned long HASH_SIZE = 1024 * 1024 * 8;
 
   const int BLACK = -1;
   const int NONE = 0;
