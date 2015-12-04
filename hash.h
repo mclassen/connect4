@@ -1,31 +1,161 @@
 #ifndef _Hash_h_
 
-struct HashEntry {
-  unsigned long flags; // 0..5   distance
-                       // 6..11  bestmove
-                       // 12..31 value
-  unsigned long key;
+#include "board.h"
 
-  int Distance() const { return (flags >> 0) & 63; }
-  int BestMove() const { return (flags >> 6) & 63; }
-  int Value()    const { return (flags >> 12); }
+#include <vector>
+
+struct HashEntry {
+	
+	HashEntry(
+		int distance,
+		bool side,
+		int value,
+		int alpha,
+		int beta,
+		unsigned long key
+	) :	itsDistance(distance),
+		itsSide(side),
+		itsValue(value),
+		itsAlpha(alpha),
+		itsBeta(beta),
+		itsKey(key)
+	{
+		// nothing to do here
+	}
+		
+	int itsDistance;
+	bool itsSide;
+
+	int itsValue;
+	int itsAlpha;
+	int itsBeta;
+
+	unsigned long itsKey;
+
+	bool isUpper() const { return itsValue < itsAlpha; }
+	bool isLower() const { return itsValue > itsBeta; }
+	bool isExact() const { return !isUpper() && !isLower(); }
 };
 
 class HashKey {
  public:
   HashKey();
-  void InitPosition(const int board[constants::MAX_MOVES]);
+  void init(const board& aBoard);
 
-  inline void MoveMade(int move, int side);
-  operator unsigned() const { return key; }
+  void makeMove(int move, int side)
+  {
+	if(side == constants::WHITE)
+		key ^= RANDOM_VALUES[move][0];
+	else
+		key ^= RANDOM_VALUES[move][1];
+  }
+
+  unsigned long getKey() const { return key; }
 
  private:
-  static void InitRandomValues();
-  static unsigned RANDOM_VALUES[constants::MAX_MOVES][2];
+  static void initRandomValues();
+  static unsigned long RANDOM_VALUES[constants::MAX_MOVES][2];
   static bool randomValuesInit;
-  static unsigned CreateUnsignedRand();
+  static unsigned long createUnsignedRand();
 
-  unsigned key;
+  unsigned long key;
+};
+
+class HashTable
+{
+public:
+	HashTable(const unsigned long size) : itsSize(size)
+	{
+		entries.reserve(itsSize);
+		init();
+	}
+	
+	void init()
+	{
+		HashEntry invalidEntry(
+			0,
+			false,
+			constants::INVALID,
+			constants::INVALID,
+			constants::INVALID,
+			0
+		);
+		entries.assign(itsSize, invalidEntry);
+	}
+	
+	void store(
+		const board& currBoard,
+		const int distance,
+		const int side,
+		const int value,
+		const int alpha,
+		const int beta)
+	{
+		HashKey key;
+		key.init(currBoard);
+		
+		HashEntry entry(
+			distance,
+			constants::WHITE == side ? false : true,
+			value,
+			alpha,
+			beta,
+			key.getKey()
+		);
+		entries[key.getKey() % itsSize] = entry;
+	}
+	
+	int lookup(
+		const board& currBoard,
+		const int distance,
+		const int side,
+		int& alpha,
+		int& beta)
+	{
+		HashKey key;
+		key.init(currBoard);
+		
+		HashEntry entry(entries[key.getKey() % itsSize]);
+		const int value = entry.itsValue;
+		if (value == constants::INVALID)
+		{
+			return value;
+		}
+		else
+		{
+			if (entry.itsDistance <= distance)
+			{
+				return constants::INVALID;
+			}
+			if (entry.isExact())
+			{
+				return value;
+			}
+			if (entry.isUpper() && value <= alpha)
+			{
+				return value;
+			}
+			if (value > alpha && value < beta)
+			{
+				beta = value;
+				return constants::INVALID;
+			}
+			if (entry.isLower() && value >= beta)
+			{
+				return value;
+			}
+			if (value < beta && value > alpha)
+			{
+				alpha = value;
+				return constants::INVALID;
+			}
+		}
+	}
+
+private:
+	unsigned long itsSize;
+	std::vector<HashEntry> entries;
+	
 };
 
 #define _Hash_h_

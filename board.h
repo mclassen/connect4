@@ -24,7 +24,12 @@ class board {
   int GetNumberOfPossibleMoves() const { return numberOfPossibleMoves; }
   int GetThreats() const { return threats; }
   bool GetFourConnected() const { return fourConnected; }
-  inline int ConvertFileToMove(int file) const;
+  inline int ConvertFileToMove(unsigned short file) const;
+  
+  static inline unsigned short GetMove(const int sq)
+  {
+	  return sq % constants::MAX_FILES;
+  }
 
  private:
   int square[constants::MAX_FILES * constants::MAX_RANKS];
@@ -60,7 +65,7 @@ inline void board::UnmakeMove(int move) {
   numberOfMove--;
 }
 
-inline int board::ConvertFileToMove(int file) const {
+inline int board::ConvertFileToMove(unsigned short file) const {
   if(file >= 0 && file < constants::MAX_FILES) {
     return piecesInFile[file] * constants::MAX_FILES + file;
   } else {

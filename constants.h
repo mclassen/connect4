@@ -1,6 +1,8 @@
 #ifndef __constants
 
 namespace constants {
+	
+  const unsigned long HASH_SIZE = 1024 * 1024 * 4;
 
   const int BLACK = -1;
   const int NONE = 0;
@@ -15,26 +17,84 @@ namespace constants {
   const int STALEMATE_VALUE = 0;
   const int BEST_VALUE = 10000;
   
-  const int WINDOW = 16;
+  const int WINDOW = 8;
   const int MATE_RANGE = 100;
 
   const int INVALID = -20000;
 
   const int NUM_THREATS = 69;
 
-  const int THREE_VAL = 10;
-  const int TWO_VAL   = 4;
+  // const int THREE_VAL = 8;
+  // const int TWO_VAL   = 2;
+  
+  const int RANK_THREE_VAL_TABLE[2][constants::MAX_RANKS] = 
+  { // upside down, so first entry is rank[0]:
+	  {  // ranks for white (= yellow) from 0 to 6
+		50,
+		128,
+		50,
+		128,
+		50,
+		128
+	  },
+	  {  // ranks for black (= red) from 0 to 6
+		128,
+		50,
+		128,
+		50,
+		128,
+		50
+	  }	  
+  };
+  
+  const int RANK_TWO_VAL_TABLE[2][constants::MAX_RANKS] = 
+  { // upside down, so first entry is rank[_, 0]:
+	  {  // ranks for white (= yellow) from 0 to 6
+		10,
+		 8,
+		10,
+		 8,
+		10,
+		 8
+	  },
+	  {  // ranks for black (= red) from 0 to MAX_RANKS-1
+		 8,
+		10,
+		 8,
+		10,
+		 8,
+		10
+	  }	  
+  };
+  
+  inline const int RANK_THREE_VAL(const unsigned rank, const int side)
+  {
+	  //assert(rank < MAX_RANKS);
+	  //return RANK_THREE_VAL_TABLE[rank];
+	  const unsigned yellowOrRed = side == constants::WHITE ? 0 : 1;
+	  return RANK_THREE_VAL_TABLE[yellowOrRed][rank];
+  }
+  
+  inline const int RANK_TWO_VAL(const unsigned rank, const int side)
+  {
+	  //assert(rank < MAX_RANKS);
+	  //return RANK_TWO_VAL_TABLE[rank];
+	  const unsigned yellowOrRed = side == constants::WHITE ? 0 : 1;
+	  return RANK_TWO_VAL_TABLE[yellowOrRed][rank];
+	  return 1;
+  }
 
   const int CENTER_TABLE[MAX_FILES][MAX_RANKS] =
 // rank: 0   1   2   3   4   5  
-      {{ 0,  1,  3,  2,  1, -2}, // first FILE
-       { 2,  3,  5,  4,  1,  0}, // second FILE
-       { 4,  5,  7,  5,  2,  1}, // ...
-       { 6,  7,  8,  7,  3,  1},
-       { 4,  5,  7,  5,  2,  1},
-       { 2,  3,  5,  4,  1,  0},
-       { 0,  1,  3,  2,  1, -2}};
+      {{ 3,  4,  5,  5,  4,  3}, // first FILE
+       { 4,  6,  8,  8,  6,  4}, // second FILE
+       { 5,  8, 11, 11,  8,  5}, // ...
+       { 7, 10, 13, 13, 10,  7},
+       { 5,  8, 11, 11,  8,  5},
+       { 4,  6,  8,  8,  6,  4},
+       { 3,  4,  5,  5,  4,  3}};
 
+	   
   const int THREAT_TABLE[MAX_FILES][MAX_RANKS][14] = {
     // first file:
     { {  0, 24, 45, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID}, 

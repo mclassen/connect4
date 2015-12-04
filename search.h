@@ -1,3 +1,6 @@
+
+#include "constants.h"
+
 #ifndef __search
 
 class searchResult {
@@ -6,6 +9,7 @@ public:
 
   int GetValue() const { return value; }
   std::vector<int> GetVariation() const { return variation; }
+  int GetMove() const { return variation[0]; }
   void clear() { 
     value = constants::WORST_VALUE;
     variation.clear();
@@ -39,6 +43,7 @@ public:
     
 private:
     board itsBoard;
+	HashTable itsHash;
     time_t startTime;
     time_t stopTime;
 
@@ -66,12 +71,12 @@ private:
         result = -aBoard.GetThreats();
       }
       // adjust for the advantage of white having the first move
-      if(numMove > 0) {
-        result +=
-			std::max(2U,
-				std::min(6U,
-					(4U * constants::MAX_DEPTH) / numMove));
-      }
+//      if(abs(result) < abs(constants::BEST_VALUE - constants::MATE_RANGE)) {
+//        result += numMove % 2 == 0 ? 2 * constants::WINDOW : 0;
+////			std::max(2U,
+////				std::min(2 * constants::WINDOW,
+////					(4U * constants::MAX_DEPTH) / numMove));
+//      }
       return result;
     }
 };

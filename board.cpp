@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <vector>
+#include <cmath>
 #include "constants.h"
 #include "move_buffer.h"
 #include "board.h"
@@ -52,6 +53,11 @@ void board::Display() {
 void board::GenerateMoves(MoveBuffer& buffer) {
   buffer.numMoves = 0;
   numberOfPossibleMoves = 0;
+  if (fourConnected)
+  {
+    return;
+  }
+  
   int i = 3;
   if(piecesInFile[i] < constants::MAX_RANKS) {
     buffer.moves[buffer.numMoves] = ConvertFileToMove(i);
@@ -103,6 +109,7 @@ void board::UpdateThreats(int file, int rank,
   int threatIndex = constants::THREAT_TABLE[file][rank][i];
   int black, white;
   int tempResult;
+  
 
   while(threatIndex != constants::INVALID) {
     if(makingMove) {
@@ -117,68 +124,119 @@ void board::UpdateThreats(int file, int rank,
     black = threatsBlack[threatIndex];
     white = threatsWhite[threatIndex];
     tempResult = 0;
+	// const int THREE_VAL_ADJ = constants::RANK_THREE_VAL(rank, side);
+	// const int TWO_VAL_ADJ = constants::RANK_TWO_VAL(rank, side);
     switch(white) {
       case 4:
         fourConnected = true;
         break;
       case 3:
-        tempResult += (black == 0) ? constants::THREE_VAL : -constants::THREE_VAL/3;
+        tempResult += (black == 0) ? constants::RANK_THREE_VAL(rank, side) : 0;
         break;
       case 2:
         if(black == 0)
-          tempResult += constants::TWO_VAL;
+          tempResult += constants::RANK_TWO_VAL(rank, side);
         break;
       case 1:
-          tempResult += (black == 3) ? constants::THREE_VAL/3 : 0;
+          //tempResult += (black == 3) ? 4 : 0;
         break;
       case 0:
         if(black == 4) {
           fourConnected = true;
         } else if(black == 3) {
-          tempResult -= constants::THREE_VAL;
+          tempResult -= constants::RANK_THREE_VAL(rank, side);
         } else if(black == 2) {
-          tempResult -= constants::TWO_VAL;
+          tempResult -= constants::RANK_TWO_VAL(rank, side);
         }
         break;
       default:
-        std::cout << "case fell through in UpdateThreats()" << std::endl;
+        std::cerr << "case fell through in UpdateThreats()" << std::endl;
         break;
     }
-	// tempResult *= 7;
-	// tempResult += side * (constants::MAX_RANKS - rank);
-	// tempResult /= 8;
-	
-	
-    if(makingMove) {
+
+    if (makingMove) {
       threats += tempResult;
     } else {
       threats -= tempResult;
-      if(side == constants::BLACK) {
-        threatsBlack[threatIndex] -= 1;
-        // std::cout << " threatsBlack: " << threatsBlack[threatIndex];
-      } else {
-        threatsWhite[threatIndex] -= 1;
-        // std::cout << " threadsWhite: " << threatsWhite[threatIndex];
-      }
     }
+	
+	const int CENTER_TABLE_VAL = constants::CENTER_TABLE[file][rank] / 2;
+	if(makingMove) {
+		if(side == constants::WHITE) {
+			threats += CENTER_TABLE_VAL;
+		} else {
+			threats -= CENTER_TABLE_VAL;
+		}
+	} else {
+		if(side == constants::WHITE) {
+			threats -= CENTER_TABLE_VAL;
+		} else {
+			threats += CENTER_TABLE_VAL;
+		}
+	}
+	  
+	if (std::abs(threats) > 1 &&
+	    std::abs(threats) < (constants::BEST_VALUE - constants::MATE_RANGE))
+	{
+		// const unsigned numMovesLeftFactor =
+		    // 10u * log(constants::MAX_DEPTH - GetNumberOfMove() + 10);
+		// threats = (10u * threats) / numMovesLeftFactor;
+		// const unsigned stage = GetNumberOfMove() / 4u;
+		// threats =
+			// (stage <= 2) ? (3 * threats) / 4 :
+				// (stage <= 4) ? (4 * threats) / 5 :
+					// (stage <= 6) ? (5 * threats) / 6:
+						// (stage <= 8) ? threats :
+							// (9 * threats) / 8;
+		
+//		const int OPEN_FILES = GetNumberOfPossibleMoves();
+//		switch(OPEN_FILES)
+//		{
+//			case 7:
+//				threats = (2 * threats) / 3;
+//			break;
+//			case 6:
+//				threats = (3 * threats) / 4;
+//			break;
+//			case 5:
+//				threats = (4 * threats) / 5;
+//			break;
+//			case 4:
+//				//threats = (7 * threats) / 8;
+//			break;
+//			case 3:
+//				threats = (6 * threats) / 5;
+//			break;
+//			case 2:
+//				threats = (5 * threats) / 4;
+//			break;
+//			case 1:
+//				threats = (4 * threats) / 3;
+//			break;
+//			default:
+//				std::cerr << "case fell through in UpdateThreats(): switch(OPEN_FILES)" << 
+//					std::endl;	
+//			break;
+//		}
+		
+	}
+	// if (std::abs(threats) < (constants::BEST_VALUE - constants::MATE_RANGE))
+	// {
+		// threats /= 2;
+	// }
+	
+	if(!makingMove) {
+		if(side == constants::BLACK) {
+			threatsBlack[threatIndex] -= 1;
+			// std::cout << " threatsBlack: " << threatsBlack[threatIndex];
+		} else {
+			threatsWhite[threatIndex] -= 1;
+			// std::cout << " threadsWhite: " << threatsWhite[threatIndex];
+		}
+	}
     i++;
     threatIndex = constants::THREAT_TABLE[file][rank][i];
   }
-  
-/*   if(makingMove) {
-    if(side == constants::WHITE) {
-      threats += constants::CENTER_TABLE[file][rank] / 2;
-    } else {
-      threats -= constants::CENTER_TABLE[file][rank] / 2;
-    }
-  } else {
-    if(side == constants::WHITE) {
-      threats -= constants::CENTER_TABLE[file][rank] / 2;
-    } else {
-      threats += constants::CENTER_TABLE[file][rank] / 2;
-    }
-  } */
-  
 }
 
 bool board::MoveIsValid(int file, bool makingMove) const {

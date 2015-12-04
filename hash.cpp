@@ -6,48 +6,42 @@
 #include "hash.h"
 
 bool HashKey::randomValuesInit = false;
-unsigned HashKey::RANDOM_VALUES[constants::MAX_MOVES][2];
+unsigned long HashKey::RANDOM_VALUES[constants::MAX_MOVES][2];
 
 HashKey::HashKey() :
   key(0) {
   if(randomValuesInit == false)
-    InitRandomValues();
+    initRandomValues();
 }
 
-void HashKey::InitPosition(const int board[constants::MAX_MOVES]) {
+void HashKey::init(const board& aBoard) {
   key = 1;
   for(int sq = 0; sq < constants::MAX_MOVES; sq++) {
-    switch(board[sq]) {
-    case constants::WHITE:
-      MoveMade(sq, constants::WHITE);
-      break;
-    case constants::BLACK:
-      MoveMade(sq, constants::BLACK);
-      break;
+    switch(aBoard.GetSquare(sq))
+	{
+		case constants::WHITE:
+			makeMove(sq, constants::WHITE);
+			break;
+		case constants::BLACK:
+			makeMove(sq, constants::BLACK);
+			break;
     }
   }
 }
 
-void HashKey::InitRandomValues() {
-  for(int sq = 0; sq < constants::MAX_MOVES; sq++) {
-    for(int side = 0; side < 2; side++) {
-      RANDOM_VALUES[sq][side] = CreateUnsignedRand();
-    }
-  }
+void HashKey::initRandomValues() {
+	for(int sq = 0; sq < constants::MAX_MOVES; sq++) {
+		RANDOM_VALUES[sq][0] = createUnsignedRand();
+		RANDOM_VALUES[sq][1] = createUnsignedRand();
+	}
+	HashKey::randomValuesInit = true;
 }
 
-unsigned HashKey::CreateUnsignedRand() {
-  unsigned result = 0;
-  for(unsigned byte = 0; byte < sizeof(unsigned); byte++) {
-    const unsigned randomByte = abs(rand()) % 256;
+unsigned long HashKey::createUnsignedRand() {
+  unsigned long result = 0;
+  for(unsigned long byte = 0; byte < sizeof(unsigned long); byte++) {
+    const unsigned long randomByte = abs(rand()) % 256;
     result |= (randomByte << (byte * 8));
   }
   return result;
-}
-
-inline void HashKey::MoveMade(int move, int side) {
-  if(side == constants::WHITE)
-    key ^= RANDOM_VALUES[move][0];
-  else
-    key ^= RANDOM_VALUES[move][1];
 }
