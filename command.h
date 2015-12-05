@@ -1,6 +1,8 @@
 #ifndef __command__h
 #define __command__h
 
+#include "constants.h"
+
 enum commandId {DISPLAY, NEW, TAKEBACK, HELP, QUIT, MOVE, SEARCH, LIMIT,
 		NONE = -1, ERROR = -10000};
 
@@ -27,7 +29,7 @@ class command {
   commandId id;
   std::string commandStr;
   int param;
-  std::stack<int> moveStack;
+  std::stack<sqType> moveStack;
 
   static const int MAX_COMMANDS;
 

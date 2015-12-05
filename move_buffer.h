@@ -1,8 +1,10 @@
 #ifndef _MoveBuffer_h_
 
+#include "constants.h"
+
 struct MoveBuffer {
-  int moves[constants::MAX_FILES];
-  int numMoves;
+  sqType moves[constants::MAX_FILES];
+  sqType numMoves;
 };
 
 #define _MoveBuffer_h_

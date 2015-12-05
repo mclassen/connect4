@@ -41,18 +41,18 @@ int main() {
     case MOVE:
       if(MainBoard.MoveIsValid(cli.GetParam(), true)) {
         int move = MainBoard.ConvertFileToMove(cli.GetParam());
-	    MainBoard.MakeMove(move);
+	MainBoard.MakeMove(move);
         cli.PushMove(move);
         MainBoard.Display();
       }
       break;
     case TAKEBACK:
-        if(MainBoard.GetNumberOfMove() > 0) {
+        if (MainBoard.GetNumberOfMove() > 0) {
             int move = cli.TakeMove();
-            if(MainBoard.MoveIsValid(File(move), false)) {
-	            MainBoard.UnmakeMove(move);
-                MainBoard.Display();
-            }
+          if (MainBoard.MoveIsValid(File(move), false)) {
+            MainBoard.UnmakeMove(move);
+            MainBoard.Display();
+          }
         }
         break;
     case SEARCH:
@@ -92,7 +92,6 @@ int main() {
     case NEW:
       MainBoard = board();
       Search = search(MainBoard);
-      Search.InitHash(constants::HASH_SIZE);
       break;
     case LIMIT:
       mainSearchSettings.SetTimeLimit(cli.GetParam());

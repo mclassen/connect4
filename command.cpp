@@ -2,13 +2,14 @@
 #include <stack>
 #include <iostream>
 #include "command.h"
+#include "constants.h"
 
 const int command::MAX_COMMANDS = 8;
 
 command::command() {
   id = NONE;
   param = 0;
-  moveStack = std::stack<int>();
+  moveStack = std::stack<sqType>();
 }
 
 command::~command() {

@@ -10,7 +10,7 @@
 board::board() {
   // std::cout << "board constructed!" << std::endl;
   fourConnected = false;
-  for(int x = 0; x < constants::MAX_MOVES; x++) {
+  for(sqType x = 0; x < constants::MAX_MOVES; x++) {
     square[x] = constants::NONE;
   }
   side = constants::WHITE;
@@ -18,12 +18,12 @@ board::board() {
   numberOfPossibleMoves = constants::MAX_FILES;
   threats = 0;
   {
-    for(int x = 0; x < constants::MAX_FILES; x++) {
+    for(sqType x = 0; x < constants::MAX_FILES; x++) {
           piecesInFile[x] = 0;
     }
   }
   {
-    for(int x = 0; x < constants::NUM_THREATS; x++) {
+    for(sqType x = 0; x < constants::NUM_THREATS; x++) {
       threatsBlack[x] = 0;
       threatsWhite[x] = 0;
     }
@@ -31,7 +31,7 @@ board::board() {
 }
 
 void board::Display() {
-  for(int y = constants::MAX_RANKS-1; y >= 0; y --) {
+  for(int y = constants::MAX_RANKS-1; y >= 0; y--) {
     for(int x = 0; x < constants::MAX_FILES; x++) {
       if(square[y * constants::MAX_FILES + x] == constants::WHITE)
         std::cout << " O ";
@@ -45,6 +45,7 @@ void board::Display() {
   std::cout << std::endl 
             <<((side == constants::WHITE) ? "O " : "X ") 
             << "to move. " << "Threats: " << GetThreats()
+            << ", HashKey: " << GetHashKey()
             << std::endl;
 }
 
@@ -58,7 +59,7 @@ void board::GenerateMoves(MoveBuffer& buffer) {
 //    return;
 //  }
   
-  int i = 3;
+  sqType i = 3;
   if(piecesInFile[i] < constants::MAX_RANKS) {
     buffer.moves[buffer.numMoves] = ConvertFileToMove(i);
     numberOfPossibleMoves++;
@@ -103,12 +104,12 @@ void board::GenerateMoves(MoveBuffer& buffer) {
 }
 #endif
 
-void board::UpdateThreats(int file, int rank, 
-  int side, bool makingMove) {
-  int i = 0;
-  int threatIndex = constants::THREAT_TABLE[file][rank][i];
-  int black, white;
-  int tempResult;
+void board::UpdateThreats(sqType file, sqType rank, 
+  sideType side, bool makingMove) {
+  sqType i = 0;
+  valType threatIndex = constants::THREAT_TABLE[file][rank][i];
+  sideType black, white;
+  valType tempResult;
   
 
   while(threatIndex != constants::INVALID) {
@@ -131,14 +132,14 @@ void board::UpdateThreats(int file, int rank,
         fourConnected = true;
         break;
       case 3:
-        tempResult += (black == 0) ? constants::RANK_THREE_VAL(rank, side) : 0;
+        tempResult += (black == 0) ? constants::RANK_THREE_VAL(rank, side) : -1;
         break;
       case 2:
         if(black == 0)
           tempResult += constants::RANK_TWO_VAL(rank, side);
         break;
       case 1:
-          //tempResult += (black == 3) ? 4 : 0;
+          tempResult += (black == 3) ? 1 : 0;
         break;
       case 0:
         if(black == 4) {
@@ -161,8 +162,7 @@ void board::UpdateThreats(int file, int rank,
       threats -= tempResult;
     }
 	
-	const int CENTER_TABLE_VAL =
-            (constants::CENTER_TABLE[file][rank]) / 2;
+	const valType CENTER_TABLE_VAL = constants::CENTER_TABLE[file][rank] / 2;
 	if(makingMove) {
 		if(side == constants::WHITE) {
 			threats += CENTER_TABLE_VAL;
@@ -241,7 +241,7 @@ void board::UpdateThreats(int file, int rank,
   }
 }
 
-bool board::MoveIsValid(int file, bool makingMove) const {
+bool board::MoveIsValid(sqType file, bool makingMove) const {
   if(makingMove)
     return ((file >= 0 && file < constants::MAX_FILES) && 
             piecesInFile[file] < constants::MAX_RANKS);

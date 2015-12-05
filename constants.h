@@ -1,75 +1,92 @@
 #ifndef __constants
 
+//#include <chrono>
+#include <cstdint>
+
+typedef unsigned long long hashKeyType;
+typedef unsigned short distType;
+typedef short sideType;
+typedef short valType;
+typedef unsigned short sqType;
+
 namespace constants {
     
-    const bool USE_HASH = true; 
+//  typedef std::chrono::high_resolution_clock myclock;
+//  static const myclock::time_point BEGINNING = myclock::now();
+    
+  const bool USE_HASH = true; 
 	
-  const unsigned long HASH_SIZE = 1024 * 1024 * 8;
+  const unsigned HASH_ENTRIES = 1024 * 1024 * 64;
 
-  const int BLACK = -1;
-  const int NONE = 0;
-  const int WHITE = 1;
+  const sideType BLACK = -1;
+  const sideType NONE = 0;
+  const sideType WHITE = 1;
   
-  const unsigned int MAX_FILES = 7;
-  const unsigned int MAX_RANKS = 6;
-  const unsigned int MAX_DEPTH = 42;
-  const unsigned int MAX_MOVES = 42;
+  const sqType MAX_FILES = 7;
+  const sqType MAX_RANKS = 6;
+  const sqType MAX_DEPTH = 42;
+  const sqType MAX_MOVES = 42;
   
   const int WORST_VALUE = -10000;
   const int STALEMATE_VALUE = 0;
   const int BEST_VALUE = 10000;
   
-  const int WINDOW = 8;
-  const int MATE_RANGE = 100;
+  const valType WINDOW = 8;
+  const valType MATE_RANGE = 100;
 
-  const int INVALID = -20000;
+  const valType INVALID = -20000;
+  
+  const sqType INVALID_MOVE = 255;
 
   const int NUM_THREATS = 69;
+  
+  // taken from https://tromp.github.io/c4/c4.html
+  const unsigned long long MAX_POSITIONS = 4294967295;
 
   // const int THREE_VAL = 8;
   // const int TWO_VAL   = 2;
   
-  const int RANK_THREE_VAL_TABLE[2][constants::MAX_RANKS] = 
+  const valType RANK_THREE_VAL_TABLE[2][constants::MAX_RANKS] = 
   { // upside down, so first entry is rank[0]:
 	  {  // ranks for white (= yellow) from 0 to 6
 		2,
 		8,
-		3,
+		2,
 		8,
-		3,
+		2,
 		8
 	  },
-	  {  // ranks for black (= red) from 0 to  3
+	  {  // ranks for black (= red) from 0 to  2
 		8,
-		3,
+		2,
 		8,
-		3,
+		2,
 		8,
-		3
-	  }	  
-  };
-  
-  const int RANK_TWO_VAL_TABLE[2][constants::MAX_RANKS] = 
-  { // upside down, so first entry is rank[_, 0]:
-	  {  // ranks for white (= yellow) from 0 to 6
-		2,
-		1,
-		2,
-		1,
-		2,
-		1
-	  },
-	  {  // ranks for black (= red) from 0 to MAX_RANKS-1
-		1,
-		2,
-		1,
-		2,
-		1,
 		2
 	  }	  
   };
   
-  inline const int RANK_THREE_VAL(const unsigned rank, const int side)
+  const valType RANK_TWO_VAL_TABLE[2][constants::MAX_RANKS] = 
+  { // upside down, so first entry is rank[_, 0]:
+	  {  // ranks for white (= yellow) from 0 to 6
+		1,
+		0,
+		1,
+		0,
+		1,
+		0
+	  },
+	  {  // ranks for black (= red) from 0 to MAX_RANKS-0
+		0,
+		1,
+		0,
+		1,
+		0,
+		1
+	  }	  
+  };
+  
+  inline const valType RANK_THREE_VAL(const sqType rank, const sideType side)
   {
 	  //assert(rank < MAX_RANKS);
 	  //return RANK_THREE_VAL_TABLE[rank];
@@ -77,27 +94,36 @@ namespace constants {
 	  return RANK_THREE_VAL_TABLE[yellowOrRed][rank];
   }
   
-  inline const int RANK_TWO_VAL(const unsigned rank, const int side)
+  inline const valType RANK_TWO_VAL(const sqType rank, const sideType side)
   {
 	  //assert(rank < MAX_RANKS);
 	  //return RANK_TWO_VAL_TABLE[rank];
-//	  const unsigned yellowOrRed = side == constants::WHITE ? 0 : 1;
-//	  return RANK_TWO_VAL_TABLE[yellowOrRed][rank];
-	  return 1;
+	  const unsigned yellowOrRed = side == constants::WHITE ? 0 : 1;
+	  return RANK_TWO_VAL_TABLE[yellowOrRed][rank];
+//	  return 1;
   }
 
-  const int CENTER_TABLE[MAX_FILES][MAX_RANKS] =
+  const valType OLD_CENTER_TABLE[MAX_FILES][MAX_RANKS] =
 // rank: 0   1   2   3   4   5  
       {{ 3,  4,  5,  5,  4,  3}, // first FILE
        { 4,  6,  8,  8,  6,  4}, // second FILE
        { 5,  8, 11, 11,  8,  5}, // ...
-       { 7, 10, 14, 14, 10,  7},
+       { 7, 10, 14, 12, 10,  7},
        { 5,  8, 11, 11,  8,  5},
        { 4,  6,  8,  8,  6,  4},
        { 3,  4,  5,  5,  4,  3}};
 
-	   
-  const int THREAT_TABLE[MAX_FILES][MAX_RANKS][14] = {
+  const valType CENTER_TABLE[MAX_FILES][MAX_RANKS] =
+// rank: 0   1   2   3   4   5  
+      {{ 1,  2,  3,  3,  2,  1}, // first FILE
+       { 2,  3,  5,  5,  3,  2}, // second FILE
+       { 3,  5,  8,  8,  5,  3}, // ...
+       { 5,  8, 10, 10,  8,  5},
+       { 3,  5,  8,  8,  5,  3},
+       { 2,  3,  5,  5,  3,  2},
+       { 1,  2,  3,  3,  2,  1}};
+
+  const valType THREAT_TABLE[MAX_FILES][MAX_RANKS][14] = {
     // first file:
     { {  0, 24, 45, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID}, 
       {  4, 24, 25, 46, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID}, 
@@ -154,7 +180,10 @@ namespace constants {
       { 19, 43, 44, 55, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID}, 
       { 23, 44, 56, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID} }
   };
-}  
+}
+
+inline sqType File(sqType sq) { return sq % constants::MAX_FILES; }
+inline sqType Rank(sqType sq) { return sq / constants::MAX_FILES; }
 
 #define __constants
 #endif

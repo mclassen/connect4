@@ -19,39 +19,40 @@ void searchResult::Print() {
 void searchResult::PrintVariation() {
   if (variation.size() > 0) {
     std::cout << File(variation[0]) << " -";
-    for (unsigned int i = 1; i < variation.size(); i++) {
+    for (sqType i = 1; i < variation.size(); i++) {
       std::cout << " " << File(variation[i]);
     }
     std::cout << std::endl;
   }
 }
 
-void searchResult::SetVariation(const int& firstMove) {
-  const int* pMove = &firstMove;
+void searchResult::SetVariation(const sqType& firstMove) {
+  const sqType* pMove = &firstMove;
   variation.clear();
-  while (*pMove != constants::INVALID) {
+  while (*pMove != constants::INVALID_MOVE) {
     variation.push_back(*pMove++);
   }
 }
 
 search::search(board& newBoard) :
 itsBoard(newBoard),
-itsHash(constants::HASH_SIZE),
+itsHash(HashTable(constants::HASH_ENTRIES)),
 maxDepth(constants::MAX_DEPTH),
-searchedNodes(0) {
+searchedNodes(0)
+{
   startTime = time(NULL);
   stopTime = time(NULL);
   ClearVariations();
 }
 
-void search::InitSearch(unsigned int depth, searchResult& result,
+void search::InitSearch(distType depth, searchResult& result,
         SearchSettings& currentSettings) {
   searchedNodes = 0;
 
-  int best = constants::WORST_VALUE;
+  valType best = constants::WORST_VALUE;
 
-  int alpha = constants::WORST_VALUE;
-  int beta = constants::BEST_VALUE;
+  valType alpha = constants::WORST_VALUE;
+  valType beta = constants::BEST_VALUE;
 
   std::cout << "performing search..." << std::endl;
   startTime = time(NULL);
@@ -60,7 +61,7 @@ void search::InitSearch(unsigned int depth, searchResult& result,
     std::cout << "Max depth reached! " << std::endl;
   }
 
-  for (unsigned int currDepth = 1; currDepth <= depth; currDepth++) {
+  for (distType currDepth = 1; currDepth <= depth; currDepth++) {
 
     stopTime = time(NULL);
     if ((currentSettings.GetTimeLimit() > 0) &&
@@ -124,31 +125,34 @@ void search::InitSearch(unsigned int depth, searchResult& result,
   stopTime = time(NULL);
 } // end InitSearch...
 
-int search::PerformSearch(unsigned int distance, unsigned int depth,
-        int alpha, int beta) {
+int search::PerformSearch(distType distance, distType depth,
+        valType alpha, valType beta) {
   // clear principle variation:
-  principleVariations[depth][0] = constants::INVALID;
+  principleVariations[depth][0] = constants::INVALID_MOVE;
 
   // the return value:
-  int best = constants::WORST_VALUE;
+  valType best = constants::WORST_VALUE;
 
   // another node has been reached
   searchedNodes++;
 
     if (constants::USE_HASH && distance > 0)
     {
-        int hashValue = constants::INVALID;
+        valType hashValue = constants::INVALID;
+        sqType hash_move = constants::INVALID_MOVE;
         hashValue =
                 itsHash.lookup(
-                        itsBoard,
+                        itsBoard.GetHashKey(),
                         distance,
                         itsBoard.GetSide(),
                         alpha,
-                        beta
+                        beta,
+                        hash_move
         );
         if (hashValue != constants::INVALID)
         {
           best = hashValue;
+          CopyVariation(depth, hash_move);
           //std::cout << "#" << std::flush;
           return best;
         }
@@ -173,13 +177,13 @@ int search::PerformSearch(unsigned int distance, unsigned int depth,
     // generate all moves:
     itsBoard.GenerateMoves(buffer);
 
-    const int legal_moves = buffer.numMoves;
+    const sqType legal_moves = buffer.numMoves;
     
     
     
-    const unsigned minDist = 4u;
-    unsigned cutoffDist = 8u;
-    const unsigned moveNum = itsBoard.GetNumberOfMove();
+    const distType minDist = 4u;
+    distType cutoffDist;
+    const sqType moveNum = itsBoard.GetNumberOfMove();
 
     if (distance >= minDist &&
             moveNum < constants::MAX_MOVES - 1)
@@ -187,40 +191,40 @@ int search::PerformSearch(unsigned int distance, unsigned int depth,
       switch (legal_moves)
       {
         case 7:
-          cutoffDist = 30;
-          if (distance <= cutoffDist) {
+          cutoffDist = 4u;
+          if (distance >= cutoffDist && distance % 2) {
             distance -= distance / 8;
           }
           break;
         case 6:
-          cutoffDist = 27u;
-          if (distance <= cutoffDist) {
+          cutoffDist = 8u;
+          if (distance >= cutoffDist && distance % 2) {
             distance -= distance / 8;
           }
           break;
         case 5:
-          cutoffDist = 24u;
-          if (distance <= cutoffDist) {
-            distance -= distance / 8;
+          cutoffDist = 16u;
+          if (distance >= cutoffDist && distance % 2) {
+            distance -= distance / 16;
           }
           break;
         case 4:
-          cutoffDist = 21u;
-          if (distance <= cutoffDist) {
-            distance -= distance / 12;
+          cutoffDist = 24u;
+          if (distance >= cutoffDist && distance % 2) {
+            distance -= distance / 16;
           }
           break;
         case 3:
-//          cutoffDist = 18u;
-//          if (distance <= cutoffDist) {
-//            distance -= distance / 16;
-//          }
+          cutoffDist = 8u;
+          if (distance <= cutoffDist && distance % 2) {
+            distance += distance / 4;
+          }
           break;
         case 2:
-          distance += distance / 8;
+          distance += distance / 4;
           break;
         case 1:
-          distance += distance / 16;
+//          distance += distance / 8;
           break;
         default:
           break;
@@ -238,16 +242,18 @@ int search::PerformSearch(unsigned int distance, unsigned int depth,
       distance = constants::MAX_DEPTH - itsBoard.GetNumberOfMove();
     }
 
-    for (int i = 0; i < buffer.numMoves; i++) {
+    for (int i = 0; i < legal_moves; i++) {
+      sqType currMove = buffer.moves[i];
+      
       // make a move:
-      itsBoard.MakeMove(buffer.moves[i]);
+      itsBoard.MakeMove(currMove);
 
       // the value in tempValue has to be negated, because the sides
       // have switched:
-      int tempValue = -PerformSearch(distance - 1, depth + 1,
+      valType tempValue = -PerformSearch(distance - 1, depth + 1,
               -beta, -alpha);
       // un-make move:
-      itsBoard.UnmakeMove(buffer.moves[i]);
+      itsBoard.UnmakeMove(currMove);
 
       // if the new value is greater than the previous one,
       // it becomes the new best value and the new alpha value:
@@ -257,17 +263,19 @@ int search::PerformSearch(unsigned int distance, unsigned int depth,
         alpha = tempValue;
 
         // update the principle variation:
-        CopyVariation(depth, buffer.moves[i]);
+        CopyVariation(depth, currMove);
         // cut-off:
         if (best >= beta) {
           if (constants::USE_HASH && !(itsBoard.GetFourConnected() == true || itsBoard.GetNumberOfMove() >= constants::MAX_MOVES)) {
+            sqType sq = itsBoard.ConvertFileToMove(currMove);
             itsHash.store(
-                    itsBoard,
+                    itsBoard.GetHashKey(),
                     distance,
                     itsBoard.GetSide(),
                     best,
                     alpha,
-                    beta
+                    beta,
+                    sq
                     );
           }
           return best;
@@ -287,29 +295,31 @@ int search::PerformSearch(unsigned int distance, unsigned int depth,
 }
 
 void search::ClearVariations() {
-  for (unsigned int depth = 0; depth < maxDepth; depth++) {
-    principleVariations[depth][0] = constants::INVALID;
+  for (distType depth = 0; depth < maxDepth; depth++) {
+    principleVariations[depth][0] = constants::INVALID_MOVE;
   }
 }
 
-void search::CopyVariation(const unsigned int depth, const int move) {
-  const int* pNextDepth_PV = &principleVariations[depth + 1][0];
-  int* pCurrent_PV = &principleVariations[depth][0];
+void search::CopyVariation(const distType depth, const sqType move) {
+  const sqType* pNextDepth_PV = &principleVariations[depth + 1][0];
+  sqType* pCurrent_PV = &principleVariations[depth][0];
 
   // copy first move:
   *pCurrent_PV++ = move;
 
   // copy continuation:
-  while (*pNextDepth_PV != constants::INVALID)
+  while (*pNextDepth_PV != constants::INVALID_MOVE)
+  {
     *pCurrent_PV++ = *pNextDepth_PV++;
+  }
 
   // mark end of variation:
-  *pCurrent_PV = constants::INVALID;
+  *pCurrent_PV = constants::INVALID_MOVE;
 }
 
 void search::PrintVariation() const {
-  const int* pPrincipleVariation = &principleVariations[0][0];
-  while (*pPrincipleVariation != constants::INVALID) {
+  const sqType* pPrincipleVariation = &principleVariations[0][0];
+  while (*pPrincipleVariation != constants::INVALID_MOVE) {
     std::cout << " " << *pPrincipleVariation++;
   }
   std::cout << std::endl;

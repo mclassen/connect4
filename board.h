@@ -1,8 +1,8 @@
 #ifndef __board
 #define __board
 
-inline int File(int sq) { return sq % constants::MAX_FILES; }
-inline int Rank(int sq) { return sq / constants::MAX_FILES; }
+#include "constants.h"
+#include "hash.h"
 
 class board {
  public:
@@ -10,68 +10,73 @@ class board {
 
   void Display();
   void GenerateMoves(MoveBuffer& buffer);
-  bool MoveIsValid(int file, bool makingMove) const;
-  inline void MakeMove(int move);
-  inline void UnmakeMove(int move);
+  bool MoveIsValid(sqType file, bool makingMove) const;
+  inline void MakeMove(sqType move);
+  inline void UnmakeMove(sqType move);
 
-  int GetSquare(int file, int rank) const { 
+  sqType GetSquare(sqType file, sqType rank) const { 
     return square[file + rank * constants::MAX_FILES]; 
   }
-  int GetSquare(int sq) const { return square[sq]; }
-  int GetSide() const { return side; }
-  int GetPiecesInFile(int file) const { return piecesInFile[file]; }
-  int GetNumberOfMove() const { return numberOfMove; }
-  int GetNumberOfPossibleMoves() const { return numberOfPossibleMoves; }
-  int GetThreats() const { return threats; }
+  sqType GetSquare(int sq) const { return square[sq]; }
+  sideType GetSide() const { return side; }
+  sqType GetPiecesInFile(sqType file) const { return piecesInFile[file]; }
+  sqType GetNumberOfMove() const { return numberOfMove; }
+  sqType GetNumberOfPossibleMoves() const { return numberOfPossibleMoves; }
+  valType GetThreats() const { return threats; }
   bool GetFourConnected() const { return fourConnected; }
-  inline int ConvertFileToMove(unsigned short file) const;
+  inline sqType ConvertFileToMove(sqType file) const;
   
-  static inline unsigned short GetMove(const int sq)
+  inline const hashKeyType GetHashKey() const { return itsHashKey.getKey(); }
+  
+  static inline sqType GetMove(const sqType sq)
   {
 	  return sq % constants::MAX_FILES;
   }
 
  private:
-  int square[constants::MAX_FILES * constants::MAX_RANKS];
-  int threatsBlack[constants::NUM_THREATS];
-  int threatsWhite[constants::NUM_THREATS];
-  int side;  // -1 == BLACK, 0 == NONE, 1 == WHITE
-  int piecesInFile[constants::MAX_FILES];
-  int numberOfMove;
-  int numberOfPossibleMoves;
+  sideType square[constants::MAX_FILES * constants::MAX_RANKS];
+  valType threatsBlack[constants::NUM_THREATS];
+  valType threatsWhite[constants::NUM_THREATS];
+  sideType side;  // -1 == BLACK, 0 == NONE, 1 == WHITE
+  sqType piecesInFile[constants::MAX_FILES];
+  sqType numberOfMove;
+  sqType numberOfPossibleMoves;
   bool fourConnected;
-  int threats;
-  void UpdateThreats(int file, int rank, 
-                     int side, bool makingMove);
+  valType threats;
+  
+  HashKey itsHashKey;
+  void UpdateThreats(sqType file, sqType rank, 
+                     sideType side, bool makingMove);
 
 };
 
-inline void board::MakeMove(int move) {
-  square[move] = side;
-  UpdateThreats(File(move), Rank(move), side, true);
+inline void board::MakeMove(sqType sq) {
+  square[sq] = side;
+  UpdateThreats(File(sq), Rank(sq), side, true);
+  itsHashKey.makeMove(sq, side);
   side = -side;
-  piecesInFile[File(move)]++;
+  piecesInFile[File(sq)]++;
   numberOfMove++;
 }
 
-inline void board::UnmakeMove(int move) {
-  const int file = File(move);
-  const int rank = Rank(move);
-  square[move] = constants::NONE;
+inline void board::UnmakeMove(sqType sq) {
+  const sqType file = File(sq);
+  const sqType rank = Rank(sq);
+  square[sq] = constants::NONE;
   piecesInFile[file]--;
   side = -side;
   UpdateThreats(file, rank, side, false);
+  itsHashKey.makeMove(sq, side);
   fourConnected = false;
   numberOfMove--;
 }
 
-inline int board::ConvertFileToMove(unsigned short file) const {
+inline sqType board::ConvertFileToMove(sqType file) const {
   if(file >= 0 && file < constants::MAX_FILES) {
     return piecesInFile[file] * constants::MAX_FILES + file;
   } else {
-    return constants::INVALID;
+    return constants::INVALID_MOVE;
   }
 }
-
 
 #endif // __board
