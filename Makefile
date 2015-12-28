@@ -11,7 +11,7 @@
 #### Compiler and tool definitions shared by all build targets #####
 CCC = g++
 CXX = g++
-BASICOPTS = -g -m64 -std=c++11 -Wall
+BASICOPTS = -g -m64 -std=c++11 -Wall -floop-parallelize-all -ftree-parallelize-loops=4
 CCFLAGS = $(BASICOPTS)
 CXXFLAGS = $(BASICOPTS)
 CCADMIN = 

@@ -8,9 +8,9 @@ class searchResult {
 public:
   searchResult() : value(constants::WORST_VALUE) {}
 
-  valType GetValue() const { return value; }
-  std::vector<sqType> GetVariation() const { return variation; }
-  sqType GetMove() const { return variation[0]; }
+  val_t GetValue() const { return value; }
+  std::vector<square_t> GetVariation() const { return variation; }
+  square_t GetMove() const { return variation[0]; }
   void clear() { 
     value = constants::WORST_VALUE;
     variation.clear();
@@ -18,15 +18,15 @@ public:
   void Print();
   void PrintVariation();
 
-  void SetValue(const valType newValue) { value = newValue; }
-  void SetVariation(std::vector<sqType>& newVariation) { 
+  void SetValue(const val_t newValue) { value = newValue; }
+  void SetVariation(std::vector<square_t>& newVariation) { 
     variation = newVariation; 
   }
-  void SetVariation(const sqType& firstMove);
+  void SetVariation(const square_t& firstMove);
 
  private:
-  valType value;
-  std::vector<sqType> variation;
+  val_t value;
+  std::vector<square_t> variation;
 };
 
 class search {
@@ -35,7 +35,7 @@ public:
     ~search() {};
 
     const unsigned long long GetSearchedNodes() const { return searchedNodes; }
-    void InitSearch(distType depth, searchResult& result, 
+    void InitSearch(dist_t depth, searchResult& result, 
 		    SearchSettings& itsSettings);
     
     void PrintVariation() const;
@@ -50,21 +50,21 @@ private:
     time_t stopTime;
 
     // evtl. die dimensionen vertauschen...
-    sqType principleVariations[constants::MAX_DEPTH][constants::MAX_DEPTH + 1];
-    distType maxDepth;
+    square_t principleVariations[constants::MAX_DEPTH][constants::MAX_DEPTH + 1];
+    dist_t maxDepth;
     unsigned long long searchedNodes;
 
-    int PerformSearch(distType distance, distType depth,
-                      valType alpha, valType beta);
+    int PerformSearch(dist_t distance, dist_t depth,
+                      val_t alpha, val_t beta);
     void ClearVariations();
-    void CopyVariation(const distType depth, const sqType move);
+    void CopyVariation(const dist_t depth, const square_t move);
 
     // Everything from the point of view of WHITE:
     // if BLACK has an advantage, then the score
     // should be negative
     //
-    valType Eval(board& aBoard) const {
-      valType result = 0;
+    val_t Eval(board& aBoard) const {
+      val_t result = 0;
       // const unsigned int unevenMoveBonus = 32;
       if(aBoard.GetSide() == constants::WHITE) {
         result = aBoard.GetThreats();

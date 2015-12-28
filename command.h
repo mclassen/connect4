@@ -29,7 +29,7 @@ class command {
   commandId id;
   std::string commandStr;
   int param;
-  std::stack<sqType> moveStack;
+  std::stack<square_t> moveStack;
 
   static const int MAX_COMMANDS;
 

@@ -3,8 +3,8 @@
 #include "constants.h"
 
 struct MoveBuffer {
-  sqType moves[constants::MAX_FILES];
-  sqType numMoves;
+  square_t moves[constants::MAX_FILES];
+  square_t numMoves;
 };
 
 #define _MoveBuffer_h_

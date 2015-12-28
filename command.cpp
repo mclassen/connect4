@@ -9,7 +9,7 @@ const int command::MAX_COMMANDS = 8;
 command::command() {
   id = NONE;
   param = 0;
-  moveStack = std::stack<sqType>();
+  moveStack = std::stack<square_t>();
 }
 
 command::~command() {

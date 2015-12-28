@@ -17,17 +17,19 @@ void searchResult::Print() {
 }
 
 void searchResult::PrintVariation() {
-  if (variation.size() > 0) {
-    std::cout << File(variation[0]) << " -";
-    for (sqType i = 1; i < variation.size(); i++) {
-      std::cout << " " << File(variation[i]);
-    }
-    std::cout << std::endl;
-  }
+	if (variation.size() > 0) {
+		const int firstMove = File(variation[0]);
+		std::cout << firstMove << " -";
+		for (size_t i = 1; i < variation.size(); i++) {
+			const int move = File(variation[i]);
+			std::cout << " " << move;
+		}
+		std::cout << std::endl;
+	}
 }
 
-void searchResult::SetVariation(const sqType& firstMove) {
-  const sqType* pMove = &firstMove;
+void searchResult::SetVariation(const square_t& firstMove) {
+  const square_t* pMove = &firstMove;
   variation.clear();
   while (*pMove != constants::INVALID_MOVE) {
     variation.push_back(*pMove++);
@@ -45,14 +47,14 @@ searchedNodes(0)
   ClearVariations();
 }
 
-void search::InitSearch(distType depth, searchResult& result,
+void search::InitSearch(dist_t depth, searchResult& result,
         SearchSettings& currentSettings) {
   searchedNodes = 0;
 
-  valType best = constants::WORST_VALUE;
+  val_t best = constants::WORST_VALUE;
 
-  valType alpha = constants::WORST_VALUE;
-  valType beta = constants::BEST_VALUE;
+  val_t alpha = constants::WORST_VALUE;
+  val_t beta = constants::BEST_VALUE;
 
   std::cout << "performing search..." << std::endl;
   startTime = time(NULL);
@@ -61,7 +63,7 @@ void search::InitSearch(distType depth, searchResult& result,
     std::cout << "Max depth reached! " << std::endl;
   }
 
-  for (distType currDepth = 1; currDepth <= depth; currDepth++) {
+  for (dist_t currDepth = 1; currDepth <= depth; currDepth++) {
 
     stopTime = time(NULL);
     if ((currentSettings.GetTimeLimit() > 0) &&
@@ -125,21 +127,21 @@ void search::InitSearch(distType depth, searchResult& result,
   stopTime = time(NULL);
 } // end InitSearch...
 
-int search::PerformSearch(distType distance, distType depth,
-        valType alpha, valType beta) {
+int search::PerformSearch(dist_t distance, dist_t depth,
+        val_t alpha, val_t beta) {
   // clear principle variation:
   principleVariations[depth][0] = constants::INVALID_MOVE;
 
   // the return value:
-  valType best = constants::WORST_VALUE;
+  val_t best = constants::WORST_VALUE;
 
   // another node has been reached
   searchedNodes++;
 
     if (constants::USE_HASH && distance > 0)
     {
-        valType hashValue = constants::INVALID;
-        sqType hash_move = constants::INVALID_MOVE;
+        val_t hashValue = constants::INVALID_VALUE;
+        square_t hash_move = constants::INVALID_MOVE;
         hashValue =
                 itsHash.lookup(
                         itsBoard.GetHashKey(),
@@ -149,7 +151,7 @@ int search::PerformSearch(distType distance, distType depth,
                         beta,
                         hash_move
         );
-        if (hashValue != constants::INVALID)
+        if (hashValue != constants::INVALID_VALUE)
         {
           best = hashValue;
           CopyVariation(depth, hash_move);
@@ -177,65 +179,74 @@ int search::PerformSearch(distType distance, distType depth,
     // generate all moves:
     itsBoard.GenerateMoves(buffer);
 
-    const sqType legal_moves = buffer.numMoves;
+    const square_t legal_moves = buffer.numMoves;
     
+    int fractionalDistance = distance * 8;
     
-    
-    const distType minDist = 4u;
-    distType cutoffDist;
-    const sqType moveNum = itsBoard.GetNumberOfMove();
+    const dist_t minDist = 2u;
+    dist_t cutoffDist;
+    const square_t moveNum = itsBoard.GetNumberOfMove();
 
     if (distance >= minDist &&
-            moveNum < constants::MAX_MOVES - 1)
+            moveNum < constants::MAX_MOVES)
     {
       switch (legal_moves)
       {
         case 7:
-          cutoffDist = 4u;
-          if (distance >= cutoffDist && distance % 2) {
-            distance -= distance / 8;
+          cutoffDist = 48;
+          if (fractionalDistance >= cutoffDist) {
+            fractionalDistance -= 4;
           }
           break;
         case 6:
-          cutoffDist = 8u;
-          if (distance >= cutoffDist && distance % 2) {
-            distance -= distance / 8;
+          cutoffDist = 40u;
+          if (fractionalDistance >= cutoffDist) {
+            fractionalDistance -= 3;
           }
           break;
         case 5:
-          cutoffDist = 16u;
-          if (distance >= cutoffDist && distance % 2) {
-            distance -= distance / 16;
+          cutoffDist = 32u;
+          if (fractionalDistance >= cutoffDist) {
+            fractionalDistance -= 2;
           }
           break;
         case 4:
           cutoffDist = 24u;
-          if (distance >= cutoffDist && distance % 2) {
-            distance -= distance / 16;
+          if (fractionalDistance >= cutoffDist) {
+            fractionalDistance -= 1;
+          }
+          else if (fractionalDistance <= 16)
+          {
+            fractionalDistance += 1;
           }
           break;
         case 3:
-          cutoffDist = 8u;
-          if (distance <= cutoffDist && distance % 2) {
-            distance += distance / 4;
+          cutoffDist = 20u;
+          if (fractionalDistance >= cutoffDist) {
+            fractionalDistance -= 1;
+          }
+          else if (fractionalDistance <= 18)
+          {
+            fractionalDistance += 1;
           }
           break;
         case 2:
-          distance += distance / 4;
+          cutoffDist = 16;
+          if (fractionalDistance >= cutoffDist) {
+            fractionalDistance -= 1;
+          }
+          else if (fractionalDistance <= 12)
+          {
+            fractionalDistance += 2;
+          }
           break;
         case 1:
-//          distance += distance / 8;
+          fractionalDistance += 4;
           break;
         default:
           break;
       }
-//
-//       const bool isEvenMove = moveNum % 2 == 0;
-//       if (isEvenMove)
-//       {
-//       distance +=
-//       moveNum <= constants::MAX_DEPTH/2 ? -1u : 0u;
-//       }
+      distance = fractionalDistance / 8;
     }
     distance += (itsBoard.GetNumberOfMove() + distance + 1) % 2;
     if (distance > constants::MAX_DEPTH - itsBoard.GetNumberOfMove()) {
@@ -243,14 +254,14 @@ int search::PerformSearch(distType distance, distType depth,
     }
 
     for (int i = 0; i < legal_moves; i++) {
-      sqType currMove = buffer.moves[i];
+      square_t currMove = buffer.moves[i];
       
       // make a move:
       itsBoard.MakeMove(currMove);
 
       // the value in tempValue has to be negated, because the sides
       // have switched:
-      valType tempValue = -PerformSearch(distance - 1, depth + 1,
+      val_t tempValue = -PerformSearch(distance - 1, depth + 1,
               -beta, -alpha);
       // un-make move:
       itsBoard.UnmakeMove(currMove);
@@ -267,7 +278,7 @@ int search::PerformSearch(distType distance, distType depth,
         // cut-off:
         if (best >= beta) {
           if (constants::USE_HASH && !(itsBoard.GetFourConnected() == true || itsBoard.GetNumberOfMove() >= constants::MAX_MOVES)) {
-            sqType sq = itsBoard.ConvertFileToMove(currMove);
+            square_t sq = itsBoard.ConvertFileToMove(currMove);
             itsHash.store(
                     itsBoard.GetHashKey(),
                     distance,
@@ -295,14 +306,14 @@ int search::PerformSearch(distType distance, distType depth,
 }
 
 void search::ClearVariations() {
-  for (distType depth = 0; depth < maxDepth; depth++) {
+  for (dist_t depth = 0; depth < maxDepth; depth++) {
     principleVariations[depth][0] = constants::INVALID_MOVE;
   }
 }
 
-void search::CopyVariation(const distType depth, const sqType move) {
-  const sqType* pNextDepth_PV = &principleVariations[depth + 1][0];
-  sqType* pCurrent_PV = &principleVariations[depth][0];
+void search::CopyVariation(const dist_t depth, const square_t move) {
+  const square_t* pNextDepth_PV = &principleVariations[depth + 1][0];
+  square_t* pCurrent_PV = &principleVariations[depth][0];
 
   // copy first move:
   *pCurrent_PV++ = move;
@@ -318,10 +329,11 @@ void search::CopyVariation(const distType depth, const sqType move) {
 }
 
 void search::PrintVariation() const {
-  const sqType* pPrincipleVariation = &principleVariations[0][0];
-  while (*pPrincipleVariation != constants::INVALID_MOVE) {
-    std::cout << " " << *pPrincipleVariation++;
-  }
-  std::cout << std::endl;
+	const square_t* pPrincipleVariation = &principleVariations[0][0];
+	while (*pPrincipleVariation != constants::INVALID_MOVE) {
+		int move = *pPrincipleVariation++;
+		std::cout << " " << move;
+	}
+	std::cout << std::endl;
 }
 

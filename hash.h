@@ -4,61 +4,81 @@
 #include "constants.h"
 
 #include <chrono>
+#include <cstdint>
 #include <iomanip>
 #include <vector>
 
 struct HashEntry {
 
+	HashEntry()
+	{
+		// set isEmpty flag:
+		bool isEmpty = true;
+		setIsEmpty(isEmpty);
+	}
+
     HashEntry(
-            distType distance,
-            bool side,
-            valType value,
-            valType alpha,
-            valType beta,
-            sqType sq
-            ) : 
-    itsDistance(distance),
-    itsSide(side),
-    itsValue(value),
-    itsAlpha(alpha),
-    itsBeta(beta),
-    itsSq(sq)
+            dist_t distance,
+			side_t side,
+			square_t   sq,
+            val_t  value,
+            val_t  alpha,
+            val_t  beta
+            )
     {
-        // nothing to do here
+        // set all the flags:
+		setDistance(distance);
+		setSide(side);
+		setSquare(sq);
+		setValue(value);
+		setAlpha(alpha);
+		setBeta(beta);
+		
+		const bool isUpper = value < alpha;
+		const bool isLower = value > beta;
+		const bool isExact = !isUpper && !isLower;
+		const bool isEmpty = false;
+		setIsUpper(isUpper);
+		setIsLower(isLower);
+		setIsExact(isExact);
+		setIsEmpty(isEmpty);
     }
 
-    distType itsDistance;
-    bool itsSide;
+	// 0..5   distance ( 6 bit)
+	// 6      side     ( 1 bit)
+	// 7..12  square   ( 6 bit)
+	// 13..24 value    (12 bit)
+	// 25..36 alpha    (12 bit)
+	// 37..48 beta     (12 bit)
+	// 49     isUpper  ( 1 bit)
+	// 50     isLower  ( 1 bit)
+	// 51     isExact  ( 1 bit)
+	// 52     isEmpty  ( 1 bit)
+	hashEntry_t flags;
 
-    valType itsValue;
-    valType itsAlpha;
-    valType itsBeta;
-    sqType itsSq;
+	// getter functions:
+	dist_t  getDistance() const	{ return (flags >>  0) &   63; }
+	bool	getSide() const		{ return (flags >>  6) &    1; }
+	square_t getSquare() const	{ return (flags >>  7) &   63; }
+	val_t   getValue() const	{ return (flags >> 13) & 2047; }
+	val_t   getAlpha() const	{ return (flags >> 25) & 2047; }
+	val_t   getBeta() const		{ return (flags >> 37) & 2047; }
+	bool	isUpper() const		{ return (flags >> 49) &    1; }
+	bool	isLower() const		{ return (flags >> 50) &    1; }
+	bool	isExact() const		{ return (flags >> 51) &    1; }
+	bool	isEmpty() const		{ return (flags >> 52) &    1; }
 
-    bool isUpper() const {
-        return itsValue < itsAlpha;
-    }
-
-    bool isLower() const {
-        return itsValue > itsBeta;
-    }
-
-    bool isExact() const {
-        return !isUpper() && !isLower();
-    }
-
-    static const HashEntry getInvalidEntry() {
-        HashEntry invalidEntry(
-                0,
-                false,
-                constants::INVALID,
-                constants::INVALID,
-                constants::INVALID,
-                constants::INVALID_MOVE
-                );
-        return invalidEntry;
-    }
-
+	// setter functions:
+	void setDistance(dist_t distance)	{ flags = (1UL >> 0) & (distance & 63); }
+	void setSide(bool side)				{ flags = (1UL >> 6) & (side & 1); }
+	void setSquare(square_t sq)			{ flags = (1UL >> 7) & (sq & 63); }
+	void setValue(val_t  value)			{ flags = (1UL >> 13) & (value & 2047); }
+	void setAlpha(val_t  alpha)			{ flags = (1UL >> 25) & (alpha & 2047); }
+	void setBeta(val_t beta)			{ flags = (1UL >> 37) & (beta  & 2047); }
+	void setIsUpper(bool isUpper)		{ flags = (1UL >> 49) & isUpper; }
+	void setIsLower(bool isLower)		{ flags = (1UL >> 50) & isLower; }
+	void setIsExact(bool isExact)		{ flags = (1UL >> 51) & isExact; }
+	void setIsEmpty(bool isEmpty)		{ flags = (1UL >> 52) & isEmpty; }
 };
 
 class HashKey {
@@ -79,17 +99,17 @@ public:
         }
     }
 
-    hashKeyType getKey() const {
+    hashKey_t getKey() const {
         return key;
     }
 
 private:
     static void initRandomValues();
-    static hashKeyType RANDOM_VALUES[constants::MAX_MOVES * 2];
+    static hashKey_t RANDOM_VALUES[constants::MAX_MOVES * 2];
     static bool randomValuesInit;
-    static hashKeyType createUnsignedRand(sqType seed);
+    static hashKey_t createUnsignedRand(square_t seed);
 
-    hashKeyType key;
+    hashKey_t key;
 };
 
 class HashTable {
@@ -101,22 +121,22 @@ public:
     }
 
     void init() {
-        HashEntry invalidEntry(HashEntry::getInvalidEntry());
-        entries.assign(itsSize, invalidEntry);
+		HashEntry emptyEntry;
+		entries.assign(itsSize, emptyEntry);
     }
 
     void store(
-            const hashKeyType key,
-            const distType distance,
-            const sideType side,
-            const valType value,
-            const valType alpha,
-            const valType beta,
-            const sqType sq) {
+            const hashKey_t key,
+            const dist_t distance,
+            const side_t side,
+            const val_t value,
+            const val_t alpha,
+            const val_t beta,
+            const square_t sq) {
 
         HashEntry entry(
                 distance,
-                constants::WHITE == side ? false : true,
+                constants::WHITE == side,
                 value,
                 alpha,
                 beta,
@@ -124,25 +144,25 @@ public:
                 );
         unsigned pos(key % itsSize);
         HashEntry previousEntry(entries[pos]);
-        if (previousEntry.itsValue == constants::INVALID)
+        if (previousEntry.getValue() == constants::INVALID_VALUE)
         {
             entries[pos] = entry;
         }
-        else if (previousEntry.itsDistance < distance && previousEntry.itsSq == sq)
+        else if (previousEntry.getDistance() < distance && previousEntry.getSquare() == sq)
         {
             entries[pos] = entry;
         }
-        else if (previousEntry.itsDistance < distance && previousEntry.itsSq != sq)
+        else if (previousEntry.getDistance() < distance && previousEntry.getSquare() != sq)
         {
 //            std::cerr << "#";
             entries[pos] = entry;
         }
-        else if (previousEntry.itsDistance >= distance && previousEntry.itsSq != sq)
+        else if (previousEntry.getDistance() >= distance && previousEntry.getSquare() != sq)
         {
             // we have a hash collision!
 //            std::cerr << "!";
         }
-        else if (previousEntry.itsDistance >= distance)
+        else if (previousEntry.getDistance() >= distance)
         {
             // don't overwrite an existing entry when it has a higher distance
         }
@@ -151,59 +171,66 @@ public:
             // shouldn't happen...
             std::cerr << std::endl << 
                     "=== sq: "  << sq << 
-                    ", #sq: "   << previousEntry.itsSq << 
+                    ", #sq: "   << previousEntry.getSquare() << 
                     ", dist: "  << distance <<
-                    ", #dist: " << previousEntry.itsDistance <<
+                    ", #dist: " << previousEntry.getDistance() <<
                     ", val: "   << value << 
-                    ", #val: "  << previousEntry.itsValue <<
+                    ", #val: "  << previousEntry.getValue() <<
                     " ==="      << std::endl;
         }
     }
 
-    valType lookup(
-            hashKeyType key,
-            const distType distance,
-            const sideType side,
-            valType& alpha,
-            valType& beta,
-            sqType& move) {
+    val_t lookup(
+            hashKey_t key,
+            const dist_t distance,
+            const side_t side,
+            val_t& alpha,
+            val_t& beta,
+            square_t& move) {
         HashEntry entry(entries[key % itsSize]);
-        const valType value = entry.itsValue;
-        if (value == constants::INVALID) {
+		const bool isEmpty = entry.isEmpty();
+        const val_t value = entry.getValue();
+		const square_t sq = entry.getSquare();
+		if (isEmpty)
+		{
+			move = constants::INVALID_MOVE;
+			return constants::INVALID_VALUE;
+		}
+        if (value == constants::INVALID_VALUE) {
             move = constants::INVALID_MOVE;
             return value;
-        } else {
-            if (entry.itsDistance < distance) {
-                move = File(entry.itsSq);
-                return constants::INVALID;
-            }
-            if (entry.isExact()) {
-                move = File(entry.itsSq);
-                return value;
-            }
-            if (entry.isUpper() && value <= alpha) {
-                move = File(entry.itsSq);
-                return value;
-            }
-            if (value > alpha && value < beta) {
-                move = File(entry.itsSq);
-                beta = value;
-                return constants::INVALID;
-            }
-            if (entry.isLower() && value >= beta) {
-                move = File(entry.itsSq);
-                return value;
-            }
-            if (value < beta && value > alpha) {
-                move = File(entry.itsSq);
-                alpha = value;
-                return constants::INVALID;
-            }
-            else
-            {
-                return constants::INVALID;
-            }
         }
+		if (entry.getDistance() < distance) {
+			move = File(sq);
+			return constants::INVALID_VALUE;
+		}
+		if (entry.isExact()) {
+			move = File(sq);
+			return value;
+		}
+		if (entry.isUpper() && value <= alpha) {
+			move = File(sq);
+			return value;
+		}
+		if (value > alpha && value < beta) {
+			move = File(sq);
+			beta = value;
+			return constants::INVALID_VALUE;
+		}
+		if (entry.isLower() && value >= beta) {
+			move = File(sq);
+			return value;
+		}
+		if (value < beta && value > alpha) {
+			move = File(sq);
+			alpha = value;
+			return constants::INVALID_VALUE;
+		}
+		else
+		{
+			move = constants::INVALID_MOVE;
+			return constants::INVALID_VALUE;
+		}
     }
 
 private:

@@ -10,7 +10,7 @@
 #include "hash.h"
 
 bool HashKey::randomValuesInit = false;
-hashKeyType HashKey::RANDOM_VALUES[constants::MAX_MOVES * 2];
+hashKey_t HashKey::RANDOM_VALUES[constants::MAX_MOVES * 2];
 
 //void HashKey::init(const board& aBoard) {
 //  for (sqType sq = 0; sq < constants::MAX_MOVES; sq++) {
@@ -26,23 +26,23 @@ hashKeyType HashKey::RANDOM_VALUES[constants::MAX_MOVES * 2];
 //}
 
 void HashKey::initRandomValues() {
-  for (sqType sq = 0; sq < constants::MAX_MOVES * 2; sq++) {
+  for (square_t sq = 0; sq < constants::MAX_MOVES * 2; sq++) {
     RANDOM_VALUES[sq] = createUnsignedRand(sq);
   }
   HashKey::randomValuesInit = true;
 }
 
-hashKeyType HashKey::createUnsignedRand(sqType sq) {
+hashKey_t HashKey::createUnsignedRand(square_t sq) {
 
   std::default_random_engine generator;
 
-  hashKeyType result = 0;
+  hashKey_t result = 0;
 
-  const sqType seed = sq;
+  const square_t seed = sq;
   
   generator.seed(seed);
-  hashKeyType MAX_KEY = std::numeric_limits<hashKeyType>::max();
-  std::uniform_int_distribution<hashKeyType> distribution(0, MAX_KEY);
+  hashKey_t MAX_KEY = std::numeric_limits<hashKey_t>::max();
+  std::uniform_int_distribution<hashKey_t> distribution(0, MAX_KEY);
 
   result = distribution(generator);
   //std::cerr << std::setw(12) << result;
